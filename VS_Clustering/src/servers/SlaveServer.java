@@ -126,4 +126,12 @@ public class SlaveServer extends Thread {
 			return false;
 		}
 	}
+
+	public int getMaxAmountOfRequests() {
+		return maxAmountOfRequests;
+	}
+
+	public void setMaxAmountOfRequests(int maxAmountOfRequests) {
+		this.maxAmountOfRequests = maxAmountOfRequests;
+	}
 }

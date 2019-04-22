@@ -94,6 +94,7 @@ public class Application {
 				if(options.getProgramMode().equals(ProgramMode.SLAVE)) {
 					System.out.println("DeregisterFromMaster : Deregister slave from master");
 					System.out.println("RegisterToMaster : Register slave to master");
+					System.out.println("UpdateSlave : Update slave info at master");
 				}
 				
 				System.out.println("--------------------------------------");
@@ -137,7 +138,25 @@ public class Application {
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}
-				} else if(s.toLowerCase().equals("getallslaves".toLowerCase()) && options.getProgramMode().equals(ProgramMode.MASTER)) {
+				}else if(s.toLowerCase().equals("updateslave") && options.getProgramMode().equals(ProgramMode.SLAVE)) {
+					System.out.print("Enter ip: ");
+					String ip = sc.nextLine();
+					System.out.println();
+					System.out.print("Enter port: ");
+					int port = sc.nextInt();
+					System.out.println();
+					System.out.print("Enter max amount of parallel requests: ");
+					int maxAmount = sc.nextInt();
+					slaveServer.setMaxAmountOfRequests(maxAmount);
+					
+					try {
+						slaveServer.registerWithMasterServer(InetAddress.getByName(ip),port,LifeCycleMethods.UPDATE);
+					} catch (UnknownHostException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				else if(s.toLowerCase().equals("getallslaves".toLowerCase()) && options.getProgramMode().equals(ProgramMode.MASTER)) {
 					
 					balancer.getSlaves().stream().forEach(ci -> System.out.println(ci));
 					
