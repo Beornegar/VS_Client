@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import connections.Connection;
+import connections.MasterConnection;
 import utils.CalculationRequest;
 import utils.Configuration;
 import utils.ConnectionInformation;
@@ -31,11 +33,9 @@ public class LoadBalancer extends Thread {
 	private static Executor threadPool = Executors.newCachedThreadPool();
 	
 	private SynchronizedList<ConnectionInformation> slaves = new SynchronizedList<>();
-	
-	//TODO: ist das hier notwendig? Muss die Logik vll in einer anderen Connection sein? -> ClientConnection?
 	private SynchronizedList<ConnectionInformation> clientRequests = new SynchronizedList<>();
-	private Queue<CalculationRequest> requestsToProcess = new ConcurrentLinkedQueue<>();
 	
+	private Queue<CalculationRequest> requestsToProcess = new ConcurrentLinkedQueue<>();
 	
 	public LoadBalancer(int port) {
 		try {		
@@ -63,7 +63,6 @@ public class LoadBalancer extends Thread {
 		System.out.println("Server down.");
 	}
 
-	//TODO: Implementation of method
 	public void reactToRequest() {
 		
 		Connection task;

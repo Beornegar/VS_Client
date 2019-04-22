@@ -1,4 +1,4 @@
-package servers;
+package connections;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import servers.LoadBalancer;
 import utils.ConnectionInformation;
 
 public class MasterConnection extends Connection {

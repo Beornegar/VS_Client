@@ -2,6 +2,8 @@ package servers;
 
 import java.net.Socket;
 
+import connections.Connection;
+
 /***
  * 
  * Open Connection of client to master server

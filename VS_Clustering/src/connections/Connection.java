@@ -1,4 +1,4 @@
-package servers;
+package connections;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +13,7 @@ import java.net.SocketException;
  * @author Dennis
  *
  */
-public class Connection extends Thread {
+public abstract class Connection extends Thread {
 
 	protected Socket socket;
 	private DataInputStream dis;

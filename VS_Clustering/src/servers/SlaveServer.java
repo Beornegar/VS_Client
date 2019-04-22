@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import connections.Connection;
+import connections.LifeCycleConnection;
+import connections.SlaveConnection;
 import utils.Configuration;
 
 /***
