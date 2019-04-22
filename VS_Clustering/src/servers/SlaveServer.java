@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -28,18 +28,27 @@ public class SlaveServer extends Thread {
 	private ServerSocket socket;
 
 	private boolean endServer = false;
-	private Map<String, Connection> allConnections = new ConcurrentHashMap<>();
-
+	private int maxAmountOfRequests;
+	
 	private InetAddress masterAddress;
 	private int masterPort;
 
-	public SlaveServer(int port, String masterAddress, int masterPort) {
+	private List<String> features = new ArrayList<>();
+
+	
+	public SlaveServer(int port, String masterAddress, int masterPort,int maxAmountOfRequests) {
 
 		if (port < Configuration.getMinPort() || port > Configuration.getMaxPort()) {
 			port = Configuration.getServerPort();
 		}
 	
+		if(maxAmountOfRequests > 0) {
+			threadPool = Executors.newFixedThreadPool(maxAmountOfRequests);
+		}
+		
 		this.masterPort = masterPort;
+		
+		initializeFeatures();
 
 		try {
 			this.masterAddress = InetAddress.getByName(masterAddress);
@@ -48,6 +57,10 @@ public class SlaveServer extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initializeFeatures() {
+			features.add("calculate");
 	}
 
 	@Override
@@ -62,14 +75,6 @@ public class SlaveServer extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			allConnections.forEach((name, st) -> {
-				try {
-					st.join();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			});
-
 			registerWithMasterServer(masterAddress, masterPort, false);
 		}
 		System.out.println("Server down.");
@@ -82,16 +87,7 @@ public class SlaveServer extends Thread {
 		endServer = true;
 	}
 
-	/**
-	 * Insert new Connection in List of open Connections
-	 * 
-	 * @param t
-	 * @return
-	 */
-	private boolean registerThread(Connection t) {
-		allConnections.put("Connection-" + allConnections.size(), t);
-		return true;
-	}
+	
 
 	/**
 	 * 
@@ -103,7 +99,6 @@ public class SlaveServer extends Thread {
 		try {
 			task = new SlaveConnection(socket.accept());
 			threadPool.execute(task);
-			registerThread(task);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -122,9 +117,8 @@ public class SlaveServer extends Thread {
 	public boolean registerWithMasterServer(InetAddress address, int port, boolean register) {
 		try {
 			Socket sendingSocket = new Socket(address, port);
-			Connection task = new LifeCycleConnection(sendingSocket, register);
+			Connection task = new LifeCycleConnection(sendingSocket, register, maxAmountOfRequests, features);
 			threadPool.execute(task);
-			registerThread(task);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

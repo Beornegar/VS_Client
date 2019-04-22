@@ -13,6 +13,7 @@ import connections.MasterConnection;
 import utils.CalculationRequest;
 import utils.Configuration;
 import utils.ConnectionInformation;
+import utils.SlaveInformation;
 import utils.SynchronizedList;
 
 
@@ -32,7 +33,7 @@ public class LoadBalancer extends Thread {
 	
 	private static Executor threadPool = Executors.newCachedThreadPool();
 	
-	private SynchronizedList<ConnectionInformation> slaves = new SynchronizedList<>();
+	private SynchronizedList<SlaveInformation> slaves = new SynchronizedList<>();
 	private SynchronizedList<ConnectionInformation> clientRequests = new SynchronizedList<>();
 	
 	private Queue<CalculationRequest> requestsToProcess = new ConcurrentLinkedQueue<>();
@@ -78,11 +79,11 @@ public class LoadBalancer extends Thread {
 		
 	}
 
-	public void register(ConnectionInformation slave) {
+	public void register(SlaveInformation slave) {
 		slaves.add(slave);
 	}
 
-	public void unregister(ConnectionInformation slave)  {
+	public void unregister(SlaveInformation slave)  {
 		if (slaves.contains(slave)) {
 			slaves.remove(slaves.indexOf(slave));
 		}
@@ -104,11 +105,11 @@ public class LoadBalancer extends Thread {
 		this.requestsToProcess = requestsToProcess;
 	}
 
-	public SynchronizedList<ConnectionInformation> getSlaves() {
+	public SynchronizedList<SlaveInformation> getSlaves() {
 		return slaves;
 	}
 
-	public void setSlaves(SynchronizedList<ConnectionInformation> slaves) {
+	public void setSlaves(SynchronizedList<SlaveInformation> slaves) {
 		this.slaves = slaves;
 	}
 

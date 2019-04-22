@@ -31,6 +31,7 @@ public class Application {
 			options.setParameterValue("serverport", Configuration.getServerPort() + "");
 			
 			options.setParameterValue("mode", Configuration.getMode().getValue());
+			options.setParameterValue("maxamountofrequests", Configuration.getMaxAmountOfRequests()+ "");
 			
 		} else {
 			options = ArgumentParsing.parseStringsFromArgs(args);
@@ -40,7 +41,7 @@ public class Application {
 			balancer = new LoadBalancer(options.getMasterPort());
 			balancer.start();
 		}else if(options.getProgramMode().equals(ProgramMode.SLAVE)) {
-			slaveServer = new SlaveServer(options.getPort(),options.getMasterAddress(),options.getMasterPort());
+			slaveServer = new SlaveServer(options.getPort(),options.getMasterAddress(),options.getMasterPort(), options.getMaxAmountOfRequests());
 			slaveServer.start();
 		} else {
 			System.out.println("Undefined Mode");

@@ -17,9 +17,9 @@ public class Options extends OptionsContainer {
     		"-mode", // Server or Client Mode?
             "-verbose", // Put out all comments?
             "-port", // with port
-            "-masterPort", // port of master -> only needed for slaves
-            "-masterAddress" // address of master -> only needed for slaves
-            
+            "-masterport", // port of master -> only needed for slaves
+            "-masteraddress", // address of master -> only needed for slaves
+            "-maxamountofrequests" // Amount of parallel processible requests
     };
 
     public Options() {
@@ -47,7 +47,8 @@ public class Options extends OptionsContainer {
         defaultOptionsHashMap.put("-port", "626");
         defaultOptionsHashMap.put("-masterport", "9000");
         defaultOptionsHashMap.put("-masteraddress", "127.0.0.1");
-
+        defaultOptionsHashMap.put("-maxamountofrequests", "0");
+        
     }
 
     public int getPort() {
@@ -70,4 +71,8 @@ public class Options extends OptionsContainer {
         return this.makeProgramMode(this.getParameterValue("-mode"));
     }
 
+    public int getMaxAmountOfRequests() {
+    	  return this.makeInteger(getParameterValue("-maxamountofrequests"));
+    }
+    
 }

@@ -23,13 +23,15 @@ public class SlaveConnection extends Connection {
 		
 		while(!isInterrupted()) {
 			
+			//TODO: Call method with Reflection
+			//TODO: messageParts[0] is name of feature/function
 			String message = receive();			
 			String[] messageParts = message.split(";");
 			
-			if(messageParts.length == 4) {
+			if(messageParts.length == 5) {
 			
 				double value = calculate(new CalculationRequest(Integer.parseInt(messageParts[1]), Integer.parseInt(messageParts[2]), messageParts[3]) );
-				send("Result:" + value);
+				send("Result;" + messageParts[4] + ";" + value);
 			}
 			
 			send("Error! calculation request malformed!");

@@ -23,6 +23,7 @@ public abstract class Configuration {
 	private static String masterAddress = "127.0.0.1";
 	private static ProgramMode mode = ProgramMode.MASTER;
 	private static boolean verbose = false;
+	private static int maxAmountOfRequests = 0;
 
 	private static Path LOG_PATH = null;
 
@@ -87,6 +88,13 @@ public abstract class Configuration {
 			value = prop.getProperty("MODE", "master");
 			mode = ProgramMode.fromString(value);
 
+			value = prop.getProperty("MAX_AMOUNT_OF_REQUESTS", "0");
+			try {
+				setMaxAmountOfRequests(Integer.parseInt(value));
+			} catch (NumberFormatException ex) {
+				setMaxAmountOfRequests(0);
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -117,6 +125,14 @@ public abstract class Configuration {
 
 	public static boolean isVerbose() {
 		return verbose;
+	}
+
+	public static int getMaxAmountOfRequests() {
+		return maxAmountOfRequests;
+	}
+
+	public static void setMaxAmountOfRequests(int maxAmountOfRequests) {
+		Configuration.maxAmountOfRequests = maxAmountOfRequests;
 	}
 
 }
