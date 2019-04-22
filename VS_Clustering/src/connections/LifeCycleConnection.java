@@ -5,25 +5,26 @@ import java.util.List;
 
 public class LifeCycleConnection extends Connection {
 
-	private boolean register;
+	private LifeCycleMethods method;
 	private int maxAmountOfRequests;
 	private String featureString = "";
 	
-	public LifeCycleConnection(Socket socket, boolean register,int maxAmountOfRequests,List<String> features) {
+	public LifeCycleConnection(Socket socket, LifeCycleMethods method,int maxAmountOfRequests,List<String> features) {
 		super(socket);
 		
-		this.register = register;
+		this.method = method;
 		features.stream().forEach(s -> featureString += s + ":" );
 	}
 	
 	@Override
 	public void run() {
 		
-		if(register) {	
+		if(method.equals(LifeCycleMethods.REGISTER)) {	
 			send("Register" + ";" + maxAmountOfRequests + ";" + featureString);
-			
-		} else {
-			send("Deregister");
+		} else if(method.equals(LifeCycleMethods.UNREGISTER)) {
+			send("Unregister");
+		} else if(method.equals(LifeCycleMethods.UPDATE)) {
+			send("Update;" + maxAmountOfRequests + ";" + featureString);
 		}
 		
 	}

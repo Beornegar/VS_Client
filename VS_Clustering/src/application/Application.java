@@ -7,6 +7,7 @@ import java.util.Scanner;
 import arguments.ArgumentParsing;
 import arguments.Options;
 import arguments.ProgramMode;
+import connections.LifeCycleMethods;
 import servers.LoadBalancer;
 import servers.SlaveServer;
 import utils.Configuration;
@@ -120,7 +121,7 @@ public class Application {
 					int port = sc.nextInt();
 					
 					try {
-						slaveServer.registerWithMasterServer(InetAddress.getByName(ip),port,true);
+						slaveServer.registerWithMasterServer(InetAddress.getByName(ip),port,LifeCycleMethods.REGISTER);
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}
@@ -132,7 +133,7 @@ public class Application {
 					int port = sc.nextInt();
 					
 					try {
-						slaveServer.registerWithMasterServer(InetAddress.getByName(ip),port,false);
+						slaveServer.registerWithMasterServer(InetAddress.getByName(ip),port,LifeCycleMethods.UNREGISTER);
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}

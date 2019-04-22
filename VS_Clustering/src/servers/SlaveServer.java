@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import connections.Connection;
 import connections.LifeCycleConnection;
+import connections.LifeCycleMethods;
 import connections.SlaveConnection;
 import utils.Configuration;
 
@@ -66,7 +67,7 @@ public class SlaveServer extends Thread {
 	@Override
 	public void run() {
 		try {
-			registerWithMasterServer(masterAddress, masterPort, true);
+			registerWithMasterServer(masterAddress, masterPort, LifeCycleMethods.REGISTER);
 
 			while (!endServer) {
 				reactToRequest();
@@ -75,7 +76,7 @@ public class SlaveServer extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			registerWithMasterServer(masterAddress, masterPort, false);
+			registerWithMasterServer(masterAddress, masterPort, LifeCycleMethods.UNREGISTER);
 		}
 		System.out.println("Server down.");
 	}
@@ -114,10 +115,10 @@ public class SlaveServer extends Thread {
 	 * @param register
 	 * @return
 	 */
-	public boolean registerWithMasterServer(InetAddress address, int port, boolean register) {
+	public boolean registerWithMasterServer(InetAddress address, int port, LifeCycleMethods lifecycleMethod) {
 		try {
 			Socket sendingSocket = new Socket(address, port);
-			Connection task = new LifeCycleConnection(sendingSocket, register, maxAmountOfRequests, features);
+			Connection task = new LifeCycleConnection(sendingSocket, lifecycleMethod, maxAmountOfRequests, features);
 			threadPool.execute(task);
 			return true;
 		} catch (IOException e) {

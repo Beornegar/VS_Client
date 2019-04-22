@@ -44,7 +44,7 @@ public class MasterConnection extends Connection {
 				
 				registerSlave(messageParts);
 
-			} else if (messageParts[0].equals("Deregister")) {
+			} else if (messageParts[0].equals("Unregister")) {
 				
 				balancer.unregister(new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort()));
 
