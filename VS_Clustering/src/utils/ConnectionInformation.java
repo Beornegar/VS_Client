@@ -45,5 +45,10 @@ public class ConnectionInformation implements Comparable<ConnectionInformation> 
 			return 1;
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "ConnectionInformation [adress=" + adress + ", port=" + port + ", openRequests=" + openRequests + "]";
+	}
 	
 }

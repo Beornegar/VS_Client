@@ -33,16 +33,16 @@ public class SlaveServer extends Thread {
 	private InetAddress masterAddress;
 	private int masterPort;
 
-	public SlaveServer(int port, InetAddress masterAddress, int masterPort) {
+	public SlaveServer(int port, String masterAddress, int masterPort) {
 
 		if (port < Configuration.getMinPort() || port > Configuration.getMaxPort()) {
 			port = Configuration.getServerPort();
 		}
-
-		this.masterAddress = masterAddress;
+	
 		this.masterPort = masterPort;
 
 		try {
+			this.masterAddress = InetAddress.getByName(masterAddress);
 			this.socket = new ServerSocket(port);
 
 		} catch (IOException e) {
@@ -119,7 +119,7 @@ public class SlaveServer extends Thread {
 	 * @param register
 	 * @return
 	 */
-	private boolean registerWithMasterServer(InetAddress address, int port, boolean register) {
+	public boolean registerWithMasterServer(InetAddress address, int port, boolean register) {
 		try {
 			Socket sendingSocket = new Socket(address, port);
 			Connection task = new LifeCycleConnection(sendingSocket, register);

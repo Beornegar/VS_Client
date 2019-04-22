@@ -2,7 +2,6 @@ package arguments;
 
 public enum ProgramMode {
     MASTER("master"),
-    CLIENT("client"),
     SLAVE("slave");
 
     private final String value;
