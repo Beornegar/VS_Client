@@ -39,6 +39,7 @@ public abstract class FeatureHandling {
 	 * 
 	 * Processes a request <br>
 	 * Form of Request: feature;argName1=argValue1:argName2=argValue2;Index
+	 * Only works if feature functions take List<String> as parameters
 	 * 
 	 * @param message
 	 * @return
