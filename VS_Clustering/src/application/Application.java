@@ -5,12 +5,12 @@ import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import arguments.ArgumentParsing;
+import arguments.Configuration;
 import arguments.Options;
 import arguments.ProgramMode;
 import connections.LifeCycleMethods;
 import servers.LoadBalancer;
 import servers.SlaveServer;
-import utils.Configuration;
 
 
 public class Application {

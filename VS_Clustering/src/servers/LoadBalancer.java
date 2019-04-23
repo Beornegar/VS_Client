@@ -10,11 +10,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import arguments.Configuration;
 import connections.Connection;
 import connections.MasterConnection;
 import connections.QueueConnection;
 import utils.Request;
-import utils.Configuration;
 import utils.ConnectionInformation;
 import utils.SlaveInformation;
 import utils.SynchronizedList;

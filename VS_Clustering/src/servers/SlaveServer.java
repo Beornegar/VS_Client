@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import arguments.Configuration;
 import connections.Connection;
 import connections.LifeCycleConnection;
 import connections.LifeCycleMethods;
 import connections.SlaveConnection;
-import utils.Configuration;
+import featurehandling.FeatureHandling;
+import featurehandling.MathFeatureHandler;
 
 /***
  * 
@@ -35,7 +37,6 @@ public class SlaveServer extends Thread {
 	private int masterPort;
 
 	private List<String> features = new ArrayList<>();
-
 	
 	public SlaveServer(int port, String masterAddress, int masterPort,int maxAmountOfRequests) {
 
@@ -93,12 +94,13 @@ public class SlaveServer extends Thread {
 	/**
 	 * 
 	 * Creates new Thread on server which processes a request
+	 * Change FeatureHandler here to set a different feature to the SlaveServer
 	 * 
 	 */
 	private void reactToRequest() {
 		Connection task;
 		try {
-			task = new SlaveConnection(socket.accept());
+			task = new SlaveConnection(socket.accept(), new MathFeatureHandler());
 			threadPool.execute(task);
 		} catch (IOException e) {
 			e.printStackTrace();
