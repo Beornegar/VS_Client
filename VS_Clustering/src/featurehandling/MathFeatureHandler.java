@@ -1,5 +1,7 @@
 package featurehandling;
 
+import java.util.List;
+
 public class MathFeatureHandler extends FeatureHandling {
 
 	/***
@@ -9,10 +11,20 @@ public class MathFeatureHandler extends FeatureHandling {
 	 * @param request
 	 * @return
 	 */
-	public double calculate(double a, double b, String function) {
+	public double calculate(List<String> params) {
+		
+		if(params == null || params.size() != 3) {
+			System.out.println("Method call with wrong parameters [" + params + "]");
+		}
 		
 		double erg = 0;
+		
+		
+		double a = Double.parseDouble(params.get(0));
+		double b = Double.parseDouble(params.get(1));
 
+		String function = params.get(2);
+		
 		switch (function) {
 
 		case "add":
