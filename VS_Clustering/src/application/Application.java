@@ -15,7 +15,7 @@ import utils.Configuration;
 
 public class Application {
 
-	private static Options options = null;
+	private static Options options = new Options();
 	private static boolean notEnded = true;
 	
 	private static LoadBalancer balancer = null;
@@ -25,14 +25,14 @@ public class Application {
 			
 		if(args.length == 0) {
 			Configuration.loadConfig();
-			options.setParameterValue("verbose", Configuration.isVerbose() + "");
+			options.setParameterValue("-verbose", Configuration.isVerbose() + "");
 			
-			options.setParameterValue("masterport", Configuration.getMasterPort() + "");
-			options.setParameterValue("masteraddress", Configuration.getMasterAddress() + "");
-			options.setParameterValue("serverport", Configuration.getServerPort() + "");
+			options.setParameterValue("-masterport", Configuration.getMasterPort() + "");
+			options.setParameterValue("-masteraddress", Configuration.getMasterAddress() + "");
+			options.setParameterValue("-port", Configuration.getServerPort() + "");
 			
-			options.setParameterValue("mode", Configuration.getMode().getValue());
-			options.setParameterValue("maxamountofrequests", Configuration.getMaxAmountOfRequests()+ "");
+			options.setParameterValue("-mode", Configuration.getMode().getValue());
+			options.setParameterValue("-maxamountofrequests", Configuration.getMaxAmountOfRequests()+ "");
 			
 		} else {
 			options = ArgumentParsing.parseStringsFromArgs(args);
