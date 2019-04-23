@@ -3,6 +3,7 @@ package utils;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SlaveInformation extends ConnectionInformation {
 
@@ -53,4 +54,20 @@ public class SlaveInformation extends ConnectionInformation {
 		}
 	}
 
+	//TODO: Validate that the the lock works as it should because the timer and the Master-Connections can perhaps take the same slave even if it only has capacities for one of them
+	//TODO: Find good place for this method
+	public static SlaveInformation getFreeSlaveWithLeastAmountOfWork(List<SlaveInformation> slaves, String feature) {
+		SlaveInformation slaveInfo = null;
+		
+		slaves = slaves.stream().sorted().collect(Collectors.toList());
+		
+		for (SlaveInformation s : slaves) {
+			if (s.getMaxAmountOfParallelRequests() > s.getOpenRequests() && s.getListOfFeatures().contains(feature)) {
+				slaveInfo = s;
+				break;
+			}
+		}
+		return slaveInfo;
+	}
+	
 }

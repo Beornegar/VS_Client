@@ -4,8 +4,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import servers.LoadBalancer;
 import utils.ConnectionInformation;
@@ -14,8 +12,8 @@ import utils.SlaveInformation;
 
 public class MasterConnection extends Connection {
 
-	LoadBalancer balancer;
-
+	private LoadBalancer balancer;
+	
 	public MasterConnection(Socket socket, LoadBalancer balancer) {
 		super(socket);
 
@@ -66,6 +64,7 @@ public class MasterConnection extends Connection {
 	}
 
 	public void processClientRequest(String[] messageParts) {
+		
 		String feature = messageParts[1].toLowerCase();
 
 		// For calculation it has "a=2:b=3:function=add"
@@ -76,13 +75,14 @@ public class MasterConnection extends Connection {
 		// 3b Enter request in Queue
 		// 3c Use Timer Thread who looks periodically in slaves if a slave is free
 
-		SlaveInformation slaveInfo = chooseSlave(feature);
+		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(),feature);
 
 		if (slaveInfo != null) {
 
 			sendRequestToSlave(feature, arguments, slaveInfo);
 		} else {
-			// TODO: If slaveInfo == null -> Insert Request into Queue
+			Request requestToProcess = new Request(feature, arguments,this.socket.getInetAddress(), this.socket.getPort());
+			balancer.getRequestsToProcess().add(requestToProcess);
 		}
 	}
 
@@ -91,29 +91,15 @@ public class MasterConnection extends Connection {
 		String feature = request.getFeature();
 		String arguments = request.getArguments();
 
-		SlaveInformation slaveInfo = chooseSlave(feature);
+		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(),feature);
 
 		if (slaveInfo != null) {
 			sendRequestToSlave(feature, arguments, slaveInfo);
 		} else {
-			Request requestToProcess = new Request(feature, arguments);
+			Request requestToProcess = new Request(feature, arguments,this.socket.getInetAddress(), this.socket.getPort());
 			balancer.getRequestsToProcess().add(requestToProcess);
 		}
 
-	}
-
-	//TODO: Validate that the the lock works as it should because the timer and the Master-Connections can perhaps take the same slave even if it only has capacities for one of them
-	private SlaveInformation chooseSlave(String feature) {
-		List<SlaveInformation> slaves = balancer.getSlaves().stream().sorted().collect(Collectors.toList());
-
-		SlaveInformation slaveInfo = null;
-		for (SlaveInformation s : slaves) {
-			if (s.getMaxAmountOfParallelRequests() > s.getOpenRequests() && s.getListOfFeatures().contains(feature)) {
-				slaveInfo = s;
-				break;
-			}
-		}
-		return slaveInfo;
 	}
 
 	private void sendRequestToSlave(String feature, String arguments, SlaveInformation slaveInfo) {
