@@ -4,8 +4,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import utils.Request;
-
 /***
  * 
  * Connection from Master-Server to the Slave-Server
