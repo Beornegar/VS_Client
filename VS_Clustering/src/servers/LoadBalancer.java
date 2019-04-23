@@ -7,10 +7,12 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import connections.Connection;
 import connections.MasterConnection;
-import utils.CalculationRequest;
+import utils.Request;
 import utils.Configuration;
 import utils.ConnectionInformation;
 import utils.SlaveInformation;
@@ -32,11 +34,12 @@ public class LoadBalancer extends Thread {
 	private ServerSocket socket;
 	
 	private static Executor threadPool = Executors.newCachedThreadPool();
+	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool( 1 );
 	
 	private SynchronizedList<SlaveInformation> slaves = new SynchronizedList<>();
 	private SynchronizedList<ConnectionInformation> clientRequests = new SynchronizedList<>();
 	
-	private Queue<CalculationRequest> requestsToProcess = new ConcurrentLinkedQueue<>();
+	private Queue<Request> requestsToProcess = new ConcurrentLinkedQueue<>();
 	
 	public LoadBalancer(int port) {
 		try {		
@@ -47,12 +50,32 @@ public class LoadBalancer extends Thread {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}	
 	}
 
 	@Override
 	public void run() {
 		try {
+			
+			scheduler.scheduleAtFixedRate(
+				    new Runnable() {
+				      @Override public void run() {
+				       
+				    	  //TODO: Look into the queue
+				    	  //If Items in Queue look if there are some free slaves who can do the work
+				    	  if(requestsToProcess.size() > 0) {
+				    		  
+				    		  //TODO: Get 
+				    		  
+				    	  }
+				      }
+				    },
+				    0 /* Startverzögerung */,
+				    5 /* Dauer */,
+				    TimeUnit.SECONDS );
+			
+			
+			
 			while (!isInterrupted()) {
 				reactToRequest();
 			}
@@ -97,11 +120,11 @@ public class LoadBalancer extends Thread {
 		this.clientRequests = clientRequests;
 	}
 
-	public Queue<CalculationRequest> getRequestsToProcess() {
+	public Queue<Request> getRequestsToProcess() {
 		return requestsToProcess;
 	}
 
-	public void setRequestsToProcess(Queue<CalculationRequest> requestsToProcess) {
+	public void setRequestsToProcess(Queue<Request> requestsToProcess) {
 		this.requestsToProcess = requestsToProcess;
 	}
 

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import servers.LoadBalancer;
 import utils.ConnectionInformation;
+import utils.Request;
 import utils.SlaveInformation;
 
 public class MasterConnection extends Connection {
@@ -34,49 +35,75 @@ public class MasterConnection extends Connection {
 	@Override
 	public void run() {
 
-		
 		String message = receive();
 		String[] messageParts = message.split(";");
 
 		if (messageParts.length > 0) {
 
 			if (messageParts[0].equals("Register") && messageParts.length == 2) {
-				
+
 				registerSlave(messageParts);
 
 			} else if (messageParts[0].equals("Unregister")) {
-				
+
 				balancer.unregister(new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort()));
 
 			} else if (messageParts[0].equals("Result") && messageParts.length == 3) {
 
-				//TODO: 1.Remove messageParts.length or replace with correct value if method of request will also be send to client
-				//TODO: 2.OR send all infos of request + erg back
-				//TODO: If 2. then perhaps also send type of erg back aswell 
-				
+				// TODO: 1.Remove messageParts.length or replace with correct value if method of
+				// request will also be send to client
+				// TODO: 2.OR send all infos of request + erg back
+				// TODO: If 2. then perhaps also send type of erg back aswell
+
 				returnResultToClient(messageParts);
-				
+
 			} else if (messageParts[0].equals("Request") && messageParts.length == 5) {
 
-				sendRequestToSlave(messageParts);
+				processClientRequest(messageParts);
 			}
 		}
 
 	}
 
-	private void sendRequestToSlave(String[] messageParts) {
+	public void processClientRequest(String[] messageParts) {
 		String feature = messageParts[1].toLowerCase();
-		int a = Integer.parseInt(messageParts[2]);
-		int b = Integer.parseInt(messageParts[3]);
-		String function = messageParts[4];
+
+		// For calculation it has "a=2:b=3:function=add"
+		String arguments = messageParts[2];
 
 		// TODO: b + c
-		
+
 		// 3b Enter request in Queue
 		// 3c Use Timer Thread who looks periodically in slaves if a slave is free
 
-		// 3a Get Slaves who implement calculation function needed
-		// 3d Get Slave with least amount of work
+		SlaveInformation slaveInfo = chooseSlave(feature);
+
+		if (slaveInfo != null) {
+
+			sendRequestToSlave(feature, arguments, slaveInfo);
+		} else {
+			// TODO: If slaveInfo == null -> Insert Request into Queue
+		}
+	}
+
+	public void processClientRequest(Request request) {
+
+		String feature = request.getFeature();
+		String arguments = request.getArguments();
+
+		SlaveInformation slaveInfo = chooseSlave(feature);
+
+		if (slaveInfo != null) {
+			sendRequestToSlave(feature, arguments, slaveInfo);
+		} else {
+			Request requestToProcess = new Request(feature, arguments);
+			balancer.getRequestsToProcess().add(requestToProcess);
+		}
+
+	}
+
+	//TODO: Validate that the the lock works as it should because the timer and the Master-Connections can perhaps take the same slave even if it only has capacities for one of them
+	private SlaveInformation chooseSlave(String feature) {
 		List<SlaveInformation> slaves = balancer.getSlaves().stream().sorted().collect(Collectors.toList());
 
 		SlaveInformation slaveInfo = null;
@@ -86,23 +113,20 @@ public class MasterConnection extends Connection {
 				break;
 			}
 		}
+		return slaveInfo;
+	}
 
-		if (slaveInfo != null) {
-
-			Socket socket;
-			try {
-				socket = new Socket(slaveInfo.getAdress(), slaveInfo.getPort());
-				DataOutputStream clientOutput = new DataOutputStream(socket.getOutputStream());
-				clientOutput.writeUTF(feature + ";" + a + ";" + b + ";" + function + ";"
-						+ balancer.getSlaves().indexOf(slaveInfo));
-				clientOutput.flush();
-				socket.close();
-				slaveInfo.setOpenRequests(slaveInfo.getOpenRequests() + 1);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			//TODO: If slaveInfo == null -> Insert Request into Queue	
+	private void sendRequestToSlave(String feature, String arguments, SlaveInformation slaveInfo) {
+		Socket socket;
+		try {
+			socket = new Socket(slaveInfo.getAdress(), slaveInfo.getPort());
+			DataOutputStream clientOutput = new DataOutputStream(socket.getOutputStream());
+			clientOutput.writeUTF(feature + ";" + arguments + ";" + balancer.getSlaves().indexOf(slaveInfo));
+			clientOutput.flush();
+			socket.close();
+			slaveInfo.setOpenRequests(slaveInfo.getOpenRequests() + 1);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -130,14 +154,13 @@ public class MasterConnection extends Connection {
 	private void registerSlave(String[] messageParts) {
 		String[] m = messageParts[1].split(":");
 
-			int maxAmount = Integer.parseInt(m[1]);
-			
-			String f = messageParts[2];
-			
-			String[] features = f.split(":");
+		int maxAmount = Integer.parseInt(m[1]);
 
-			balancer.register(
-					new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort(), maxAmount,features));
+		String f = messageParts[2];
+		String[] features = f.split(":");
+
+		balancer.register(
+				new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort(), maxAmount, features));
 	}
 
 }

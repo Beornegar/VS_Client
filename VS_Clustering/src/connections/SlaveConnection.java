@@ -1,8 +1,10 @@
 package connections;
 
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
-import utils.CalculationRequest;
+import utils.Request;
 
 /***
  * 
@@ -23,15 +25,38 @@ public class SlaveConnection extends Connection {
 		
 		while(!isInterrupted()) {
 			
-			//TODO: Call method with Reflection
-			//TODO: messageParts[0] is name of feature/function
+			
 			String message = receive();			
 			String[] messageParts = message.split(";");
 			
-			if(messageParts.length == 5) {
 			
-				double value = calculate(new CalculationRequest(Integer.parseInt(messageParts[1]), Integer.parseInt(messageParts[2]), messageParts[3]) );
-				send("Result;" + messageParts[4] + ";" + value);
+			
+			
+			String[] argumentParts = messageParts[1].split(":");
+			Map<String,String> arguments = new HashMap<>();
+			
+			for(String a : argumentParts) {
+				String[] keyValuePair = a.split("=");
+				if(keyValuePair.length == 2) {
+					String key = keyValuePair[0];
+					String value = keyValuePair[1];
+					arguments.put(key, value);
+				} else {
+					System.out.println("Malformed message in [arguments] :" + message);
+				}
+			}
+			
+			//TODO: Call method with Reflection
+			//TODO: messageParts[0] is name of feature/function
+			//TODO: messageParts[1] = arguments for function -> needs generic approach
+			//TODO: Insert parameter values for method with help of the map
+			
+			
+			//For calculation it has "a=2:b=3:function=add"
+			if(messageParts.length == 3) {
+			
+				double value = calculate(Integer.parseInt(arguments.get("a")), Integer.parseInt(arguments.get("b")), arguments.get("function"));
+				send("Result;" + messageParts[2] + ";" + value);
 			}
 			
 			send("Error! calculation request malformed!");
@@ -39,14 +64,18 @@ public class SlaveConnection extends Connection {
 		
 	}
 	
-	public double calculate(CalculationRequest request) {
+	/***
+	 * 
+	 * 
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public double calculate(double a, double b, String function) {
 		
 		double erg = 0;
-		
-		double a = request.getA();
-		double b = request.getB();
-		
-		switch (request.getFunction()) {
+
+		switch (function) {
 
 		case "add":
 			erg = a + b;

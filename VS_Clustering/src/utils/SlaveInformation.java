@@ -7,33 +7,40 @@ import java.util.List;
 public class SlaveInformation extends ConnectionInformation {
 
 	private int maxAmountOfParallelRequests;
-	private List<String> listOfFeatures = new ArrayList<>();
-	
+	private List<String> listOfFeatures = new SynchronizedList<>();
+
+	private static final Object REQUESTLOCK = new Object();
+	private static final Object LISTLOCK = new Object();
+
 	public SlaveInformation(InetAddress address, int port) {
 		super(address, port);
 	}
-	
-	public SlaveInformation(InetAddress address, int port,int maxAmountOfParallelRequests, String[] features) {
+
+	public SlaveInformation(InetAddress address, int port, int maxAmountOfParallelRequests, String[] features) {
 		super(address, port);
-		
+
 		this.maxAmountOfParallelRequests = maxAmountOfParallelRequests;
-		
-		if(features.length > 0) {
-			
-			for(int i = 0; i < features.length; i++) {
+
+		if (features.length > 0) {
+
+			for (int i = 0; i < features.length; i++) {
 				listOfFeatures.add(features[i].toLowerCase());
 			}
-			
+
 		}
-		
+
 	}
 
 	public int getMaxAmountOfParallelRequests() {
-		return maxAmountOfParallelRequests;
+		synchronized (REQUESTLOCK) {
+			return maxAmountOfParallelRequests;
+		}
 	}
 
 	public void setMaxAmountOfParallelRequests(int maxAmountOfParallelRequests) {
-		this.maxAmountOfParallelRequests = maxAmountOfParallelRequests;
+		synchronized (REQUESTLOCK) {
+			this.maxAmountOfParallelRequests = maxAmountOfParallelRequests;
+		}
 	}
 
 	public List<String> getListOfFeatures() {
@@ -41,7 +48,9 @@ public class SlaveInformation extends ConnectionInformation {
 	}
 
 	public void setListOfFeatures(List<String> listOfFeatures) {
-		this.listOfFeatures = listOfFeatures;
+		synchronized (LISTLOCK) {
+			this.listOfFeatures = listOfFeatures;
+		}
 	}
 
 }
