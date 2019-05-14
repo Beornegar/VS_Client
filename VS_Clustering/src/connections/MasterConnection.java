@@ -21,6 +21,7 @@ public class MasterConnection extends Connection {
 	}
 
 	/***
+	 * Message-Form: "Guid;Method;Feature;Arguments" <br>
 	 * 
 	 * 1. Get message from outside with listenSocket <br>
 	 * 2. If message is from a slave -> Register/DeRegister/ResultOfCalculation <br>
@@ -36,26 +37,22 @@ public class MasterConnection extends Connection {
 		String message = receive();
 		String[] messageParts = message.split(";");
 
-		if (messageParts.length > 0) {
+		if (messageParts.length > 1) {
 
-			if (messageParts[0].equals("Register") && messageParts.length == 2) {
+			if (messageParts.length == 2 && messageParts[1].equals("Register")) {
 
 				registerSlave(messageParts);
 
-			} else if (messageParts[0].equals("Unregister")) {
+			} else if (messageParts[1].equals("Unregister")) {
 
 				balancer.unregister(new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort()));
 
-			} else if (messageParts[0].equals("Result") && messageParts.length == 3) {
-
-				// TODO: 1.Remove messageParts.length or replace with correct value if method of
-				// request will also be send to client
-				// TODO: 2.OR send all infos of request + erg back
-				// TODO: If 2. then perhaps also send type of erg back aswell
+				//TODO: Change length here or even remove?
+			} else if (messageParts.length == 3 && messageParts[0].equals("Result")) {
 
 				returnResultToClient(messageParts);
-
-			} else if (messageParts[0].equals("Request") && messageParts.length == 5) {
+				//TODO: Change length here or even remove?
+			} else if (messageParts.length == 4 && messageParts[1].equals("Request")) {
 
 				processClientRequest(messageParts);
 			}
@@ -63,23 +60,23 @@ public class MasterConnection extends Connection {
 
 	}
 
+	/***
+	 * 
+	 * Example of Request for Calculation: "guid;calculate;2:3:add"
+	 * 
+	 * @param messageParts
+	 */
 	public void processClientRequest(String[] messageParts) {
 		
+		String guid = messageParts[0];
 		String feature = messageParts[1].toLowerCase();
-
-		// For calculation it has "a=2:b=3:function=add"
 		String arguments = messageParts[2];
-
-		// TODO: b + c
-
-		// 3b Enter request in Queue
-		// 3c Use Timer Thread who looks periodically in slaves if a slave is free
+		
 
 		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(),feature);
 
 		if (slaveInfo != null) {
-
-			sendRequestToSlave(feature, arguments, slaveInfo);
+			sendRequestToSlave(feature, arguments, slaveInfo,guid);
 		} else {
 			Request requestToProcess = new Request(feature, arguments,this.socket.getInetAddress(), this.socket.getPort());
 			balancer.getRequestsToProcess().add(requestToProcess);
@@ -90,11 +87,12 @@ public class MasterConnection extends Connection {
 
 		String feature = request.getFeature();
 		String arguments = request.getArguments();
-
+		String guid = request.getGuid();
+		
 		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(),feature);
 
 		if (slaveInfo != null) {
-			sendRequestToSlave(feature, arguments, slaveInfo);
+			sendRequestToSlave(feature, arguments, slaveInfo, guid);
 		} else {
 			Request requestToProcess = new Request(feature, arguments,this.socket.getInetAddress(), this.socket.getPort());
 			balancer.getRequestsToProcess().add(requestToProcess);
@@ -102,12 +100,12 @@ public class MasterConnection extends Connection {
 
 	}
 
-	private void sendRequestToSlave(String feature, String arguments, SlaveInformation slaveInfo) {
+	private void sendRequestToSlave(String feature, String arguments, SlaveInformation slaveInfo, String guid) {
 		Socket socket;
 		try {
 			socket = new Socket(slaveInfo.getAdress(), slaveInfo.getPort());
 			DataOutputStream clientOutput = new DataOutputStream(socket.getOutputStream());
-			clientOutput.writeUTF(feature + ";" + arguments + ";" + balancer.getSlaves().indexOf(slaveInfo));
+			clientOutput.writeUTF(balancer.getSlaves().indexOf(slaveInfo) + ";" + guid + ";" + feature + ";" + arguments );
 			clientOutput.flush();
 			socket.close();
 			slaveInfo.setOpenRequests(slaveInfo.getOpenRequests() + 1);

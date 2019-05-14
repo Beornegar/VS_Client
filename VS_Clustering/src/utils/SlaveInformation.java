@@ -53,8 +53,6 @@ public class SlaveInformation extends ConnectionInformation {
 		}
 	}
 
-	//TODO: Validate that the the lock works as it should because the timer and the Master-Connections can perhaps take the same slave even if it only has capacities for one of them
-	//TODO: Find good place for this method
 	public static SlaveInformation getFreeSlaveWithLeastAmountOfWork(List<SlaveInformation> slaves, String feature) {
 		SlaveInformation slaveInfo = null;
 		
@@ -68,5 +66,5 @@ public class SlaveInformation extends ConnectionInformation {
 		}
 		return slaveInfo;
 	}
-	
+
 }

@@ -1,11 +1,8 @@
 package connections;
 
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 import featurehandling.FeatureHandling;
-import featurehandling.MathFeatureHandler;
 
 /***
  * 
@@ -17,6 +14,7 @@ import featurehandling.MathFeatureHandler;
  */
 public class SlaveConnection extends Connection {
 
+	//TODO: List of processors
 	FeatureHandling processor;
 	
 	public SlaveConnection(Socket socket, FeatureHandling processor) {
@@ -33,6 +31,7 @@ public class SlaveConnection extends Connection {
 			String message = receive();
 			String index = message.split(";")[2];
 			
+			//TODO: Select right processor			
 			String erg = processor.processRequest(message);
 			send("Result;" + index + ";" + erg);
 			

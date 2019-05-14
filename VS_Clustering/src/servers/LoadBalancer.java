@@ -65,11 +65,16 @@ public class LoadBalancer extends Thread {
 					// If Items in Queue look if there are some free slaves who can do the work
 					if (requestsToProcess.size() > 0) {
 						
-						for(Request r : requestsToProcess) {
+						for(int i = 0; i < 10; i++) {
+							Request r = requestsToProcess.poll();
+							
+							if(r == null) {
+								break;
+							}
+							
 							processQueueItem(r);
 						}
-						
-						
+												
 					}
 				}
 			}, 0 /* Startverzögerung */, 5 /* Dauer */, TimeUnit.SECONDS);

@@ -4,6 +4,9 @@ import java.net.InetAddress;
 
 public class Request {
 
+	private String guid;
+	private String message;
+	
 	private String feature;
 	private String arguments;
 
@@ -27,9 +30,11 @@ public class Request {
 		this.feature = feature;
 	}
 
+
 	public String getArguments() {
 		return arguments;
 	}
+
 
 	public void setArguments(String arguments) {
 		this.arguments = arguments;
@@ -49,5 +54,21 @@ public class Request {
 
 	public void setClientPort(int clientPort) {
 		this.clientPort = clientPort;
+	}
+
+	public String getGuid() {
+		return guid;
+	}
+
+	public void setGuid(String guid) {
+		this.guid = guid;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }

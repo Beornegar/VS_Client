@@ -14,7 +14,6 @@ import connections.Connection;
 import connections.LifeCycleConnection;
 import connections.LifeCycleMethods;
 import connections.SlaveConnection;
-import featurehandling.FeatureHandling;
 import featurehandling.MathFeatureHandler;
 
 /***
