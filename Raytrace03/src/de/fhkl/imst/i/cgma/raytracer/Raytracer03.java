@@ -36,9 +36,13 @@ public class Raytracer03 implements IRayTracerImplementation {
 	private Raytracer03() {
 		try {
 
-//		    gui.addObject(RTFileReader.read(I_Sphere.class, new File("data/ikugel.dat")));
-			gui.addObject(RTFileReader.read(T_Mesh.class, new File("data/dreieck1.dat")));
+			// gui.addObject(RTFileReader.read(I_Sphere.class, new
+			// File("data/ikugel.dat")));
 
+			gui.addObject(RTFileReader.read(T_Mesh.class, new File("data/dreiecke2.dat")));
+//			gui.addObject(RTFileReader.read(T_Mesh.class, new File("data/dreieck2.dat")));
+
+			
 			objects = gui.getObjects();
 
 		} catch (IOException e) {
@@ -100,7 +104,6 @@ public class Raytracer03 implements IRayTracerImplementation {
 					gui.setPixel(xp, yp, color.getRGB());
 				}
 			}
-			System.out.println("xp:" + xp + " ,resx:" + resx + " ,resy:" + resy);
 		}
 	}
 
@@ -140,6 +143,7 @@ public class Raytracer03 implements IRayTracerImplementation {
 			// object is an implicit sphere?
 			if (scene instanceof I_Sphere) {
 				sphere = (I_Sphere) scene;
+
 
 				float t;
 
@@ -204,38 +208,41 @@ public class Raytracer03 implements IRayTracerImplementation {
 				// loop over all triangles
 				for (int i = 0; i < mesh.triangles.length; i++) {
 					// get the three vertices
-					p1 = new float[3];
-					p2 = new float[3];
-					p3 = new float[3];
+					p1 = mesh.vertices[mesh.triangles[i][0]];
+				    p2 = mesh.vertices[mesh.triangles[i][1]];
+				    p3 = mesh.vertices[mesh.triangles[i][2]];
 
 					// intermediate version
 					// calculate normal n and triangle area a
-					n = new float[3];
-					a = 0f;
+				    n = new float[3];
+				    a = calculateN(n, p1, p2, p3);
 
-					rayVn = 0f;
+				    rayVn =  rayVx*n[0]+ rayVy*n[1]+ rayVz*n[2];
+				    
+				    // backface? => next triangle
+				    if (rayVn >= 0)
+					continue;	    
 
-					// backface? => next triangle
-					if (rayVn >= 0)
-						continue;
+				    // no intersection point? => next triangle
+				    if (Math.abs(rayVn) < 1E-7)
+					continue;
 
-					// no intersection point? => next triangle
-					if (Math.abs(rayVn) < 1E-7)
-						continue;
-
-					pen = 0f;
+					pen = (p1[0]  -rayEx) * n[0] + (p1[1] - rayEy)  *n[1] + (p1[2] - rayEz) * n[2];
 
 					// calculate intersection point with plane along the ray
-					t = 0f;
+					// rayVn = v* n
+
+					// Fall 1 : v * n nicht senkrecht -> rayVn != 0
+					t = pen / rayVn;
 
 					// already a closer intersection point? => next triangle
 					if (t >= minT)
 						continue;
 
 					// the intersection point with the plane
-					ip[0] = 0f;
-					ip[1] = 0f;
-					ip[2] = 0f;
+					ip[0] = rayEx + t * rayVx;
+					ip[1] = rayEy + t * rayVy;
+					ip[2] = rayEz + t * rayVz;
 
 					// no intersection point with the triangle? => next
 					// triangle
@@ -308,9 +315,9 @@ public class Raytracer03 implements IRayTracerImplementation {
 		}
 
 		return null;
-//			// intermediate version
-//			Random rd = new Random();
-//			return new Color(rd.nextFloat(), rd.nextFloat(), rd.nextFloat());
+		// // intermediate version
+		// Random rd = new Random();
+		// return new Color(rd.nextFloat(), rd.nextFloat(), rd.nextFloat());
 
 	}
 
@@ -342,24 +349,25 @@ public class Raytracer03 implements IRayTracerImplementation {
 			r[0] = 2 * Math.max(0, ln) * n[0] - l[0];
 			r[1] = 2 * Math.max(0, ln) * n[1] - l[1];
 			r[2] = 2 * Math.max(0, ln) * n[2] - l[2];
-
+			normalize(r);
+			
 			// <r,v>
 			rv = r[0] * v[0] + r[1] * v[1] + r[2] * v[2];
 
 			// specular component, Ids*rs*<r,v>^n
 			if (rv > 0) {
-				float pow = materialN;
-				ir += Ids[0] * material[6] * Math.pow(Math.max(0, rv), pow);
-				ig += Ids[1] * material[7] * Math.pow(Math.max(0, rv), pow);
-				ib += Ids[2] * material[8] * Math.pow(Math.max(0, rv), pow);
+				float pow =(float) Math.pow(Math.max(0, rv), materialN);
+				ir += Ids[0] * material[6] * pow;
+				ig += Ids[1] * material[7] * pow;
+				ib += Ids[2] * material[8] * pow;
 			}
 		}
 
-		ir = Math.min(1, ir);
-		ig = Math.min(1, ig);
-		ib = Math.min(1, ib);
+		ir = ir > 1 ? 1 : ir;
+		ig = ig > 1 ? 1 : ig;
+		ib = ib > 1 ? 1 : ib;
 
-		System.out.println(ir + " " + ig + " " + ib);
+		//System.out.println(ir + " " + ig + " " + ib);
 		return new Color(ir, ig, ib);
 	}
 
@@ -372,9 +380,21 @@ public class Raytracer03 implements IRayTracerImplementation {
 
 		// a = Vi2-Vi1, b = Vi3-Vi1
 
+		ax = p2[0] - p1[0];
+		ay = p2[1] - p1[1];
+		az = p2[2] - p1[2];
+
 		// n =a x b
 
+		bx = p3[0] - p1[0];
+		by = p3[1] - p1[1];
+		bz = p3[2] - p1[2];
+
 		// normalize n, calculate and return area of triangle
+		fn[0] = ay * bz - az * by;
+		fn[1] = az * bx - ax * bz;
+		fn[2] = ax * by - ay * bx;
+
 		return normalize(fn) / 2;
 	}
 
@@ -392,12 +412,12 @@ public class Raytracer03 implements IRayTracerImplementation {
 	// altered!
 	private boolean triangleTest(float[] p, float[] p1, float[] p2, float[] p3, float a, float ai[]) {
 		float tmp[] = new float[3];
+		
+		ai[0] = calculateN(tmp,p1,p2,p);
+		ai[1] = calculateN(tmp,p,p2,p3);
+		ai[2] = calculateN(tmp,p1,p,p3);
 
-		ai[0] = 0f;
-		ai[1] = 0f;
-		ai[2] = 0f;
-
-		if (true)
+		if( Math.abs(ai[0] + ai[1] + ai[2] - a) < 1E-5 )
 			return true;
 
 		return false;
@@ -417,6 +437,10 @@ public class Raytracer03 implements IRayTracerImplementation {
 
 		l = (float) Math.sqrt(v[0] + v[1] + v[2]);
 
+		if(l < 1.E-07) {
+			return 0f;
+		}
+		
 		vec[0] = (1 / l) * vec[0];
 		vec[1] = (1 / l) * vec[1];
 		vec[2] = (1 / l) * vec[2];
