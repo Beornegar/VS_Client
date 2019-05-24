@@ -39,7 +39,7 @@ public class Raytracer03 implements IRayTracerImplementation {
 			// gui.addObject(RTFileReader.read(I_Sphere.class, new
 			// File("data/ikugel.dat")));
 
-			gui.addObject(RTFileReader.read(T_Mesh.class, new File("data/dreiecke2.dat")));
+			gui.addObject(RTFileReader.read(T_Mesh.class, new File("data/kugel1.dat")));
 //			gui.addObject(RTFileReader.read(T_Mesh.class, new File("data/dreieck2.dat")));
 
 			

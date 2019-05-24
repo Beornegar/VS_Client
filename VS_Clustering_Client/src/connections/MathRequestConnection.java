@@ -34,13 +34,21 @@ public class MathRequestConnection extends Connection {
 		
 		//2. Sysout the returned String
 		//TODO: Differentiate between error-return and value-return
-		System.out.println(receive());
+		String message = receive();
+		String[] messageParts = message.split(";");
+		
+		if(messageParts.length != 3) {
+			System.out.println("Received broken message [" + message + "]");
+		}
+		String result = messageParts[2];
+		
+		System.out.println("Returned message: " + result);
 		
 	}
 
 	private String createRequestString() {
 		
-		String erg = "Request;" + guid+ ";" + "calculate;" + params.getA() + ";" + params.getB() + ";" + params.getOperation();
+		String erg = "Request;" + guid+ ";" + "calculate;" + params.getA() + ":" + params.getB() + ":" + params.getOperation();
 		
 		return erg;
 	}
