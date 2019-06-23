@@ -15,8 +15,8 @@ public abstract class Configuration {
 	private static final int MAX_PORT = 65535;
 	private static int serverPort = 12340;
 
-	private static int masterPort = 9000;
-	private static String masterAddress = "127.0.0.1";
+	private static int masterPort = 0;
+	private static String masterAddress = null;
 
 	private static boolean verbose = false;
 	private static int maxAmountOfRequests = 0;
@@ -69,14 +69,14 @@ public abstract class Configuration {
 				serverPort = 9000;
 			}
 
-			value = prop.getProperty("MASTER_PORT", "9000");
+			value = prop.getProperty("MASTER_PORT", "0");
 			try {
 				setMasterPort(Integer.parseInt(value));
 			} catch (NumberFormatException ex) {
 				setMasterPort(9000);
 			}
 
-			value = prop.getProperty("MASTER_ADDRESS", "127.0.0.1");
+			value = prop.getProperty("MASTER_ADDRESS");
 
 			value = prop.getProperty("VERBOSE", "false");
 			verbose = Boolean.parseBoolean(value);

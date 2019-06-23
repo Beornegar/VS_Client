@@ -46,10 +46,11 @@ public class MasterConnection extends Connection {
 			if (messageParts[0].toLowerCase().equals("register")) {
 
 				registerSlave(messageParts);
-
+				
 			} else if (messageParts[0].toLowerCase().equals("unregister")) {
 
 				balancer.unregister(new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort()));
+				send("ok");
 
 			} else if (messageParts[0].toLowerCase().equals("result")) {
 
@@ -200,6 +201,8 @@ public class MasterConnection extends Connection {
 
 		balancer.register(
 				new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort(), maxAmount, features));
+		
+		send("ok");
 	}
 
 }

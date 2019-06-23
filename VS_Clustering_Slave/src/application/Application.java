@@ -77,8 +77,7 @@ public class Application {
 
 				System.out.println("DeregisterFromMaster : Deregister slave from master");
 				System.out.println("RegisterToMaster : Register slave to master");
-				System.out.println("Update : Update slave info at master");
-
+			
 				System.out.println("--------------------------------------");
 
 				String s = sc.nextLine();
@@ -114,23 +113,6 @@ public class Application {
 					try {
 						slaveServer.registerWithMasterServer(InetAddress.getByName(ip), port,
 								LifeCycleMethods.UNREGISTER);
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
-					}
-				} else if (s.toLowerCase().equals("update")) {
-
-					System.out.print("Enter ip: ");
-					String ip = sc.nextLine();
-					System.out.println();
-					System.out.print("Enter port: ");
-					int port = sc.nextInt();
-					System.out.println();
-					System.out.print("Enter max amount of parallel requests: ");
-					int maxAmount = sc.nextInt();
-					slaveServer.setMaxAmountOfRequests(maxAmount);
-
-					try {
-						slaveServer.registerWithMasterServer(InetAddress.getByName(ip), port, LifeCycleMethods.UPDATE);
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}

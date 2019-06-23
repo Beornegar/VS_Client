@@ -31,9 +31,10 @@ public class SlaveServer extends Thread {
 	private boolean endServer = false;
 	private int maxAmountOfRequests;
 
+	private volatile boolean isRegistered = false;
 	private InetAddress masterAddress;
 	private int masterPort;
-	
+
 	private volatile int openRequests = 0;
 	private List<String> features = new ArrayList<>();
 
@@ -43,7 +44,9 @@ public class SlaveServer extends Thread {
 			port = Configuration.getServerPort();
 		}
 
-		if (maxAmountOfRequests > 0) {
+		if (maxAmountOfRequests <= 0) {
+			threadPool = Executors.newFixedThreadPool(1);
+		} else {
 			threadPool = Executors.newFixedThreadPool(maxAmountOfRequests);
 		}
 
@@ -67,12 +70,18 @@ public class SlaveServer extends Thread {
 	@Override
 	public void run() {
 		try {
-			registerWithMasterServer(masterAddress, masterPort, LifeCycleMethods.REGISTER);
 
 			while (!endServer) {
-				reactToRequest();
-			}
 
+				if (!isRegistered() && masterAddress != null && masterPort > 0) {
+					registerWithMasterServer(masterAddress, masterPort, LifeCycleMethods.REGISTER);
+				} else {
+
+					while (!endServer) {
+						reactToRequest();
+					}
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -100,7 +109,7 @@ public class SlaveServer extends Thread {
 			task = new SlaveConnection(socket.accept(), new MathFeatureHandler(), this);
 			threadPool.execute(task);
 			incrementOpenRequests();
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -116,15 +125,14 @@ public class SlaveServer extends Thread {
 	 * @param register
 	 * @return
 	 */
-	public boolean registerWithMasterServer(InetAddress address, int port, LifeCycleMethods lifecycleMethod) {
+	public void registerWithMasterServer(InetAddress address, int port, LifeCycleMethods lifecycleMethod) {
 		try {
 			Socket sendingSocket = new Socket(address, port);
-			Connection task = new LifeCycleConnection(sendingSocket, lifecycleMethod, maxAmountOfRequests, features);
+			Connection task = new LifeCycleConnection(sendingSocket, lifecycleMethod, maxAmountOfRequests, features,
+					this);
 			threadPool.execute(task);
-			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
-			return false;
 		}
 	}
 
@@ -135,15 +143,35 @@ public class SlaveServer extends Thread {
 	public void setMaxAmountOfRequests(int maxAmountOfRequests) {
 		this.maxAmountOfRequests = maxAmountOfRequests;
 	}
-	
+
 	public synchronized void incrementOpenRequests() {
 		openRequests++;
 		System.out.println("OpenRequests" + openRequests);
 	}
-	
+
 	public synchronized void decrementOpenRequests() {
 		openRequests--;
 		System.out.println("OpenRequests" + openRequests);
 	}
-	
+
+	public void registerMaster(InetAddress address, int port) {
+		this.masterAddress = address;
+		this.masterPort = port;
+		this.isRegistered = true;
+	}
+
+	public void deregisterMaster() {
+		this.masterAddress = null;
+		this.masterPort = 0;
+		this.isRegistered = false;
+	}
+
+	public boolean isRegistered() {
+		return isRegistered;
+	}
+
+	public void setRegistered(boolean isRegistered) {
+		this.isRegistered = isRegistered;
+	}
+
 }
