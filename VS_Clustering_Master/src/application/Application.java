@@ -26,7 +26,7 @@ public class Application {
 			options = ArgumentParsing.parseStringsFromArgs(args);
 		}
 
-		balancer = new LoadBalancer(options.getPort());
+		balancer = new LoadBalancer(options.getPort(),options.getVerbose());
 		balancer.start();
 		System.out.println("Loadbalaner/Master running now on port: " + options.getPort());
 		runApplication();
