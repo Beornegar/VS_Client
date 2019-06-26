@@ -51,7 +51,9 @@ public class MasterConnection extends Connection {
 				
 			} else if (messageParts[0].toLowerCase().equals("unregister")) {
 
-				balancer.unregister(new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort()));
+				int port = Integer.parseInt(messageParts[1]); 
+				
+				balancer.unregister(this.socket.getInetAddress(), port);
 				send("ok");
 
 			} else if (messageParts[0].toLowerCase().equals("result")) {
@@ -103,7 +105,7 @@ public class MasterConnection extends Connection {
 							
 		} else {
 			Request requestToProcess = new Request(feature, arguments, this.socket.getInetAddress(),
-					this.socket.getPort());
+					this.socket.getPort(), guid);
 			
 			balancer.addClientRequest(socket.getInetAddress(), clientPort, guid);
 			
@@ -124,7 +126,7 @@ public class MasterConnection extends Connection {
 			sendRequestToSlave(feature, arguments, slaveInfo, guid);
 		} else {
 			Request requestToProcess = new Request(feature, arguments, this.socket.getInetAddress(),
-					this.socket.getPort());
+					this.socket.getPort(), guid);
 			
 			balancer.getRequestsToProcess().add(requestToProcess);
 		}

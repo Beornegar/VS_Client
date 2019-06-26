@@ -54,7 +54,7 @@ public class SlaveInformation extends ConnectionInformation {
 		}
 	}
 
-	public static SlaveInformation getFreeSlaveWithLeastAmountOfWork(List<SlaveInformation> slaves, String feature) {
+	public synchronized static SlaveInformation getFreeSlaveWithLeastAmountOfWork(List<SlaveInformation> slaves, String feature) {
 		SlaveInformation slaveInfo = null;
 		
 		//slaves = slaves.stream().sorted().collect(Collectors.toList());
@@ -70,7 +70,7 @@ public class SlaveInformation extends ConnectionInformation {
 
 	@Override
 	public String toString() {
-		return "SlaveInformation [maxAmountOfParallelRequests=" + maxAmountOfParallelRequests + ", listOfFeatures="
+		return "SlaveInformation [adress="+adress+ ", port=" + port +", maxAmountOfParallelRequests=" + maxAmountOfParallelRequests + ", listOfFeatures="
 				+ listOfFeatures + "]";
 	}
 

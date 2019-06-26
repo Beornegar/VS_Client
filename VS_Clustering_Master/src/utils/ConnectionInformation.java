@@ -6,9 +6,9 @@ import java.util.UUID;
 
 public class ConnectionInformation {
 
-	private InetAddress adress;
-	private int port;
-	private List<UUID> listOfOpenRequests = new SynchronizedList<>();
+	protected InetAddress adress;
+	protected int port;
+	protected List<UUID> listOfOpenRequests = new SynchronizedList<>();
 
 	protected static final Object LOCK = new Object();
 

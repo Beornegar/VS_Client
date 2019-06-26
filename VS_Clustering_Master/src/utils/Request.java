@@ -14,13 +14,14 @@ public class Request {
 	private InetAddress clientName;
 	private int clientPort;
 
-	public Request(String feature, String arguments, InetAddress clientName, int clientPort) {
+	public Request(String feature, String arguments, InetAddress clientName, int clientPort,UUID guid) {
 		super();
 		this.feature = feature;
 		this.arguments = arguments;
 
 		this.clientName = clientName;
 		this.clientPort = clientPort;
+		this.guid = guid;
 	}
 
 	public String getFeature() {

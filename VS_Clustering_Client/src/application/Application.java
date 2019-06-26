@@ -56,28 +56,18 @@ public class Application {
 	 * @param sc
 	 */
 	private static void getConsoleInput(Scanner sc) {
+		System.out.println("--------------");
+		System.out.println("Possible commands:");
+		System.out.println("registerLoadBalancer");
+		System.out.println("end");
+		System.out.println("MathRequest");
+		System.out.println("SendSeveralRequests");
+		System.out.println("--------------");
+		System.out.println();
 		
-//		System.out.println("--------------");
-//		System.out.println("Possible commands:");
-//		System.out.println("registerLoadBalancer");
-//		System.out.println("end");
-//		System.out.println("MathRequest");
-//		System.out.println("SendSeveralRequests");
-//		System.out.println("--------------");
-//		System.out.println();
-//		
+		
 		while (notEnded) {
 			if (sc.hasNext()) {
-				
-				System.out.println("--------------");
-				System.out.println("Possible commands:");
-				System.out.println("registerLoadBalancer");
-				System.out.println("end");
-				System.out.println("MathRequest");
-				System.out.println("SendSeveralRequests");
-				System.out.println("--------------");
-				System.out.println();
-				
 				System.out.print("Command:");
 				String s = sc.nextLine();
 
@@ -173,8 +163,19 @@ public class Application {
 						server.sendMathRequest(ip, port, params, UUID.randomUUID().toString());
 					}
 					
+				} else if(s.toLowerCase().equals("help")) {
+					System.out.println("--------------");
+					System.out.println("Possible commands:");
+					System.out.println("registerLoadBalancer");
+					System.out.println("end");
+					System.out.println("MathRequest");
+					System.out.println("SendSeveralRequests");
+					System.out.println("--------------");
+					System.out.println();
 				}
 
+				System.out.print("Command:");
+				
 			}
 		}
 	}

@@ -59,20 +59,23 @@ public class Application {
 	 * @param sc
 	 */
 	private static void getConsoleInput(Scanner sc) {
+		
+		System.out.println();
+		System.out.println("--------------------------------------");
+
+		System.out.println("Possible commands:");
+		System.out.println("End : Ends the server");
+
+		System.out.println("GetAllSlaves : get all registered slaves");
+		System.out.println("GetOpenRequests : get all pending requests");
+
+		System.out.println("--------------------------------------");
+		System.out.println();
+
+		
 		while (notEnded) {
 			if (sc.hasNext()) {
-				System.out.println();
-				System.out.println("--------------------------------------");
-
-				System.out.println("Possible commands:");
-				System.out.println("End : Ends the server");
-
-				System.out.println("GetAllSlaves : get all registered slaves");
-				System.out.println("GetOpenRequests : get all pending requests");
-
-				System.out.println("--------------------------------------");
-				System.out.println();
-
+				
 				String s = sc.nextLine();
 
 				if (s.toLowerCase().equals("end")) {
@@ -95,6 +98,19 @@ public class Application {
 					balancer.getClientRequests().stream().forEach(ci -> System.out.println(ci));
 					System.out.println("--------------------------------------");
 					System.out.println();
+				} else if(s.toLowerCase().equals("help")) {
+					System.out.println();
+					System.out.println("--------------------------------------");
+
+					System.out.println("Possible commands:");
+					System.out.println("End : Ends the server");
+
+					System.out.println("GetAllSlaves : get all registered slaves");
+					System.out.println("GetOpenRequests : get all pending requests");
+
+					System.out.println("--------------------------------------");
+					System.out.println();
+
 				}
 			}
 		}

@@ -169,7 +169,7 @@ public class SlaveServer extends Thread {
 
 	public synchronized void incrementOpenRequests() {
 		openRequests++;
-		System.out.println("OpenRequests" + openRequests);
+		System.out.println("OpenRequests: " + openRequests);
 	}
 
 	public synchronized void decrementOpenRequests() {
@@ -187,6 +187,8 @@ public class SlaveServer extends Thread {
 		this.masterAddress = null;
 		this.masterPort = 0;
 		this.isRegistered = false;
+		
+		
 	}
 
 	public boolean isRegistered() {

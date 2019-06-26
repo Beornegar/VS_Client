@@ -44,7 +44,7 @@ public class LifeCycleConnection extends Connection {
 			}
 			
 		} else if(method.equals(LifeCycleMethods.UNREGISTER)) {
-			send("Unregister");
+			send("Unregister;" + server.getOwnPort());
 			String returnMassage = receive();
 			
 			if(returnMassage.toLowerCase().equals("ok")) {

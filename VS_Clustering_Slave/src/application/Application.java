@@ -68,18 +68,21 @@ public class Application {
 	 * @param sc
 	 */
 	private static void getConsoleInput(Scanner sc) {
+		
+
+		System.out.println("--------------------------------------");
+
+		System.out.println("Possible commands:");
+		System.out.println("End : Ends the server");
+
+		System.out.println("DeregisterFromMaster : Deregister slave from master");
+		System.out.println("RegisterToMaster : Register slave to master");
+	
+		System.out.println("--------------------------------------");
+
+		
 		while (notEnded) {
 			if (sc.hasNext()) {
-
-				System.out.println("--------------------------------------");
-
-				System.out.println("Possible commands:");
-				System.out.println("End : Ends the server");
-
-				System.out.println("DeregisterFromMaster : Deregister slave from master");
-				System.out.println("RegisterToMaster : Register slave to master");
-			
-				System.out.println("--------------------------------------");
 
 				String s = sc.nextLine();
 
@@ -117,6 +120,18 @@ public class Application {
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}
+				} else if(s.toLowerCase().equals("help")) {
+
+					System.out.println("--------------------------------------");
+
+					System.out.println("Possible commands:");
+					System.out.println("End : Ends the server");
+
+					System.out.println("DeregisterFromMaster : Deregister slave from master");
+					System.out.println("RegisterToMaster : Register slave to master");
+				
+					System.out.println("--------------------------------------");
+
 				}
 			}
 		}
