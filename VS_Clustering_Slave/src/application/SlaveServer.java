@@ -121,7 +121,7 @@ public class SlaveServer extends Thread {
 	private void reactToRequest() {
 		Connection task;
 		try {
-			task = new SlaveConnection(socket.accept(), new MathFeatureHandler(), this);
+			task = new SlaveConnection(socket.accept(), new MathFeatureHandler(), this, masterAddress, masterPort);
 			threadPool.execute(task);
 			incrementOpenRequests();
 
@@ -129,6 +129,7 @@ public class SlaveServer extends Thread {
 			e.printStackTrace();
 		}
 	}
+
 
 	/***
 	 * 
@@ -168,7 +169,7 @@ public class SlaveServer extends Thread {
 
 	public synchronized void decrementOpenRequests() {
 		openRequests--;
-		System.out.println("OpenRequests" + openRequests);
+		System.out.println("OpenRequests: " + openRequests);
 	}
 
 	public void registerMaster(InetAddress address, int port) {

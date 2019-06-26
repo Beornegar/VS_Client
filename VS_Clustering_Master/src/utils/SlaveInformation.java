@@ -57,7 +57,7 @@ public class SlaveInformation extends ConnectionInformation {
 	public static SlaveInformation getFreeSlaveWithLeastAmountOfWork(List<SlaveInformation> slaves, String feature) {
 		SlaveInformation slaveInfo = null;
 		
-		slaves = slaves.stream().sorted().collect(Collectors.toList());
+		//slaves = slaves.stream().sorted().collect(Collectors.toList());
 		
 		for (SlaveInformation s : slaves) {
 			if (s.getMaxAmountOfParallelRequests() > s.getListOfOpenRequests().size() && s.getListOfFeatures().contains(feature)) {
