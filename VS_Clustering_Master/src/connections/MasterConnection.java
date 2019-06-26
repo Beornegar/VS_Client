@@ -39,6 +39,7 @@ public class MasterConnection extends Connection {
 	public void run() {
 
 		String message = receive();
+		System.out.println("Received Message: " + message);
 		String[] messageParts = message.split(";");
 
 		if (messageParts.length > 1) {
@@ -91,7 +92,8 @@ public class MasterConnection extends Connection {
 		}
 
 		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(), feature);
-
+		System.out.println("Slave with least amount of work: " + slaveInfo);
+		
 		if (slaveInfo != null) {
 			sendRequestToSlave(feature, arguments, slaveInfo, guid);
 		} else {
@@ -132,9 +134,10 @@ public class MasterConnection extends Connection {
 	private void sendRequestToSlave(String feature, String arguments, SlaveInformation slaveInfo, UUID guid) {
 		Socket socket;
 		try {
+			System.out.println(""+slaveInfo.getAdress()+ slaveInfo.getPort());
 			socket = new Socket(slaveInfo.getAdress(), slaveInfo.getPort());
 			DataOutputStream clientOutput = new DataOutputStream(socket.getOutputStream());
-
+			System.out.println("Send message to slave ["+ "Request;" + guid + ";" + feature + ";" + arguments  + "]" );
 			clientOutput.writeUTF("Request;" + guid + ";" + feature + ";" + arguments);
 
 			clientOutput.flush();
@@ -168,7 +171,8 @@ public class MasterConnection extends Connection {
 
 		if (infoOptional.isPresent()) {
 			ConnectionInformation info = infoOptional.get();
-
+			
+			System.out.println("Received Result["+ "Result;" + guid + " ; Returned message [" + ergMessage + "]" +"] and sending it back to client: " + info);
 			InetAddress clientAddress = info.getAdress();
 			int clientPort = info.getPort();
 
@@ -192,16 +196,17 @@ public class MasterConnection extends Connection {
 	 * @param messageParts
 	 */
 	private void registerSlave(String[] messageParts) {
-		String[] m = messageParts[1].split(":");
+		
 
-		int maxAmount = Integer.parseInt(m[1]);
+		int maxAmount = Integer.parseInt(messageParts[1]);
 
 		String f = messageParts[2];
 		String[] features = f.split(":");
-
-		balancer.register(
-				new SlaveInformation(this.socket.getInetAddress(), this.socket.getPort(), maxAmount, features));
+		int port = Integer.parseInt(messageParts[3]);
 		
+		balancer.register(
+				new SlaveInformation(this.socket.getInetAddress(), port, maxAmount, features));
+		System.out.println();
 		send("ok");
 	}
 

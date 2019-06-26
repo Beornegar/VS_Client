@@ -2,11 +2,11 @@ package utils;
 
 public enum MathOperations {
 
-	Add("add"),
-	Substract("sub"),
-	Multiply("mul"),
-	Divide("div"),
-	Modulo("mod");
+	add("add"),
+	sub("sub"),
+	mul("mul"),
+	div("div"),
+	mod("mod");
 	
 	private final String value;
 	

@@ -23,11 +23,16 @@ public class SlaveConnection extends Connection {
 		
 		while(!isInterrupted()) {
 				
-			String message = receive();			
-			String index = message.split(";")[2];
+			String message = receive();
+			System.out.println();
+			System.out.println("message: " + message);
+			System.out.println();
+			String index = message.split(";")[1];
 			
 			//TODO: Select right processor (if List of processors)			
 			String erg = processor.processRequest(message);
+			System.out.println("Sending following message to Master: " + "Result;" + index + ";" + erg);
+			
 			send("Result;" + index + ";" + erg);
 			
 			server.decrementOpenRequests();

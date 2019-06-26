@@ -33,10 +33,11 @@ public class Application {
 			options = ArgumentParsing.parseStringsFromArgs(args);
 		}
 
+		System.out.println("MAsteradress: " + options.getMasterAddress() + ", MAsterport: " + options.getMasterPort() + "MAXREQUESTS: "+ options.getMaxAmountOfRequests());
 		slaveServer = new SlaveServer(options.getPort(), options.getMasterAddress(), options.getMasterPort(),
 				options.getMaxAmountOfRequests());
 		slaveServer.start();
-
+		System.out.println("Slave running on port: " + options.getPort());
 		runApplication();
 
 	}

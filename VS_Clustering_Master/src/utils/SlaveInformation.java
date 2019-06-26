@@ -68,5 +68,11 @@ public class SlaveInformation extends ConnectionInformation {
 		return slaveInfo;
 	}
 
+	@Override
+	public String toString() {
+		return "SlaveInformation [maxAmountOfParallelRequests=" + maxAmountOfParallelRequests + ", listOfFeatures="
+				+ listOfFeatures + "]";
+	}
+
 	
 }

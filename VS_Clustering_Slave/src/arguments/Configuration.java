@@ -83,8 +83,10 @@ public abstract class Configuration {
 
 			value = prop.getProperty("MAX_AMOUNT_OF_REQUESTS", "1");
 			try {
+				System.out.println("MAX_AMOUNT_OF_REQUESTS: "+value);
 				setMaxAmountOfRequests(Integer.parseInt(value));
 			} catch (NumberFormatException ex) {
+				System.err.println("NumberFormatException");
 				setMaxAmountOfRequests(0);
 			}
 

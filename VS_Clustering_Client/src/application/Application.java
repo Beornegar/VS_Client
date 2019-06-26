@@ -56,15 +56,26 @@ public class Application {
 	 * @param sc
 	 */
 	private static void getConsoleInput(Scanner sc) {
+		
+		System.out.println("--------------");
+		System.out.println("Possible commands:");
+		System.out.println("registerLoadBalancer");
+		System.out.println("end");
+		System.out.println("MathRequest");
+		System.out.println("SendSeveralRequests");
+		System.out.println("--------------");
+		System.out.println();
+		
 		while (notEnded) {
 			if (sc.hasNext()) {
+				System.out.print("Command:");
 				String s = sc.nextLine();
 
 				if (s.toLowerCase().equals("end")) {
 					notEnded = false;
 					server.close();
 					break;
-				} else if (s.toLowerCase().equals("registerLoadBalancer")) {
+				} else if (s.toLowerCase().equals("registerloadbalancer")) {
 
 					System.out.println("----------- Registered Loadbalancer -------------");
 					for (LoadBalancerInformation info : loadbalancer) {
@@ -82,8 +93,8 @@ public class Application {
 					LoadBalancerInformation info = new LoadBalancerInformation(ip, port);
 					loadbalancer.add(info);
 
-				} else if (s.toLowerCase().equals("MathRequest")) {
-
+				} else if (s.toLowerCase().equals("mathrequest")) {
+					System.out.println();
 					System.out.println("----------- Available Loadbalancer -------------");
 					for (LoadBalancerInformation info : loadbalancer) {
 						System.out.println(info.toString());
@@ -106,14 +117,16 @@ public class Application {
 					double b = sc.nextDouble();
 
 					System.out.println();
+					System.out.println("Operations: add,sub,div,mul,mod");
 					System.out.print("Operation: ");
-					String op = sc.next();
+					String op = sc.next().toLowerCase();
 
 					MathParameter params = new MathParameter(a, b, MathOperations.valueOf(op));
 
 					server.sendMathRequest(ip, port, params, UUID.randomUUID().toString());
-				} else if (s.toLowerCase().equals("SendSeveralRequests")) {
+				} else if (s.toLowerCase().equals("sendseveralrequests")) {
 
+					System.out.println();
 					System.out.println("----------- Available Loadbalancer -------------");
 					for (LoadBalancerInformation info : loadbalancer) {
 						System.out.println(info.toString());
@@ -136,8 +149,9 @@ public class Application {
 					double b = sc.nextDouble();
 
 					System.out.println();
+					System.out.println("Operations: add,sub,div,mul,mod");
 					System.out.print("Operation: ");
-					String op = sc.next();
+					String op = sc.next().toLowerCase();
 					
 					System.out.println();
 					System.out.print("Number of requests: ");

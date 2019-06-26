@@ -35,9 +35,9 @@ public class Options extends OptionsContainer {
 			defaultOptionsHashMap = new HashMap<String, String>();
 		}
 		defaultOptionsHashMap.put("-port", "626");
-		defaultOptionsHashMap.put("-maxamountofrequests", "0");
-		defaultOptionsHashMap.put("-masterport", "9000");
-		defaultOptionsHashMap.put("-masteraddress", "127.0.0.1");
+		defaultOptionsHashMap.put("-maxamountofrequests", "1");
+		defaultOptionsHashMap.put("-masterport", "10000");
+		defaultOptionsHashMap.put("-masteraddress", "null");
 
 	}
 

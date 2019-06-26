@@ -32,8 +32,12 @@ public class SlaveServer extends Thread {
 	private int maxAmountOfRequests;
 
 	private volatile boolean isRegistered = false;
+	private volatile boolean registerInProcess = false;
+	
 	private InetAddress masterAddress;
 	private int masterPort;
+	
+	private int ownPort;
 
 	private volatile int openRequests = 0;
 	private List<String> features = new ArrayList<>();
@@ -44,23 +48,31 @@ public class SlaveServer extends Thread {
 			port = Configuration.getServerPort();
 		}
 
+		this.maxAmountOfRequests = maxAmountOfRequests;
 		if (maxAmountOfRequests <= 0) {
-			threadPool = Executors.newFixedThreadPool(1);
+			threadPool = Executors.newFixedThreadPool(5);
+			this.maxAmountOfRequests = 5;
 		} else {
-			threadPool = Executors.newFixedThreadPool(maxAmountOfRequests);
+			threadPool = Executors.newFixedThreadPool(maxAmountOfRequests + 2);
 		}
-
+		
 		this.masterPort = masterPort;
+		this.ownPort = port;
 
 		initializeFeatures();
 
 		try {
-			this.masterAddress = InetAddress.getByName(masterAddress);
+			System.out.println(masterAddress + ":" + masterPort);
+			if(masterAddress != null && !"".equals(masterAddress) && !"null".equals(masterAddress) ) {
+				this.masterAddress = InetAddress.getByName(masterAddress);
+			}
 			this.socket = new ServerSocket(port);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		System.out.println(this.maxAmountOfRequests);
 	}
 
 	private void initializeFeatures() {
@@ -70,14 +82,17 @@ public class SlaveServer extends Thread {
 	@Override
 	public void run() {
 		try {
-
+			System.out.println("Run start");
+			
 			while (!endServer) {
-
-				if (!isRegistered() && masterAddress != null && masterPort > 0) {
+				
+				if (!isRegistered() && registerInProcess == false && masterAddress != null && masterPort > 0) {
+					
 					registerWithMasterServer(masterAddress, masterPort, LifeCycleMethods.REGISTER);
+					System.out.println("IsRegistered" + isRegistered() + "MAsteraddress:" + masterAddress);
 				} else {
 
-					while (!endServer) {
+					while (!endServer && isRegistered()) {
 						reactToRequest();
 					}
 				}
@@ -127,8 +142,10 @@ public class SlaveServer extends Thread {
 	 */
 	public void registerWithMasterServer(InetAddress address, int port, LifeCycleMethods lifecycleMethod) {
 		try {
+			System.out.println("In register with master server");
+			registerInProcess = true;
 			Socket sendingSocket = new Socket(address, port);
-			Connection task = new LifeCycleConnection(sendingSocket, lifecycleMethod, maxAmountOfRequests, features,
+			Connection task = new LifeCycleConnection(sendingSocket, lifecycleMethod, this.maxAmountOfRequests, features,
 					this);
 			threadPool.execute(task);
 		} catch (IOException e) {
@@ -172,6 +189,22 @@ public class SlaveServer extends Thread {
 
 	public void setRegistered(boolean isRegistered) {
 		this.isRegistered = isRegistered;
+	}
+
+	public boolean isRegisterInProcess() {
+		return registerInProcess;
+	}
+
+	public void setRegisterInProcess(boolean registerInProcess) {
+		this.registerInProcess = registerInProcess;
+	}
+
+	public int getOwnPort() {
+		return ownPort;
+	}
+
+	public void setOwnPort(int ownPort) {
+		this.ownPort = ownPort;
 	}
 
 }

@@ -62,7 +62,7 @@ public class LoadBalancer extends Thread {
 				public void run() {
 
 					if (requestsToProcess.size() > 0) {
-						
+						System.out.println("Scheduler processing requests now");
 						for(int i = 0; i < 10; i++) {
 							Request r = requestsToProcess.poll();
 							
@@ -95,7 +95,7 @@ public class LoadBalancer extends Thread {
 			task = new MasterConnection(requestSocket, this);
 			threadPool.execute(task);
 			clientRequests.add(new ConnectionInformation(requestSocket.getInetAddress(), requestSocket.getPort()));
-
+			System.out.println("Got new request");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -114,11 +114,13 @@ public class LoadBalancer extends Thread {
 
 	public void register(SlaveInformation slave) {
 		slaves.add(slave);
+		System.out.println("register new Slave: " + slave);
 	}
 
 	public void unregister(SlaveInformation slave) {
 		if (slaves.contains(slave)) {
 			slaves.remove(slaves.indexOf(slave));
+			System.out.println("Deregister slave: " + slave);
 		}
 	}
 

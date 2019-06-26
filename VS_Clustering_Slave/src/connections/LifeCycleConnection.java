@@ -19,18 +19,27 @@ public class LifeCycleConnection extends Connection {
 		features.stream().forEach(s -> featureString += s + ":" );
 		
 		this.server = server;
+		this.maxAmountOfRequests = maxAmountOfRequests;
 	}
 	
 	@Override
 	public void run() {
 		
+		System.out.println("In LifeCylcle-Thread");
+		
+		
 		if(method.equals(LifeCycleMethods.REGISTER)) {	
-			send("Register" + ";" + maxAmountOfRequests + ";" + featureString);
+			
+			System.out.println("In Register");
+			
+			send("Register" + ";" + maxAmountOfRequests + ";" + featureString + ";" + server.getOwnPort());
 			String returnMassage = receive();
 			
 			if(returnMassage.toLowerCase().equals("ok")) {
+				System.out.println("registered = true");
 				server.setRegistered(true);
 			} else {
+				System.out.println("registered = false");
 				server.setRegistered(false);
 			}
 			
@@ -45,7 +54,7 @@ public class LifeCycleConnection extends Connection {
 			}
 			
 		} 
-		
+		server.setRegisterInProcess(false);
 	}
 	
 }
