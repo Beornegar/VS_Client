@@ -22,7 +22,7 @@ public class Application {
 	public static void main(String[] args) {
 
 		options = ArgumentParsing.parseStringsFromArgs(args);
-		server = new MathServer();
+		server = new MathServer(options.getPort());
 
 		server.start();
 
@@ -57,17 +57,27 @@ public class Application {
 	 */
 	private static void getConsoleInput(Scanner sc) {
 		
-		System.out.println("--------------");
-		System.out.println("Possible commands:");
-		System.out.println("registerLoadBalancer");
-		System.out.println("end");
-		System.out.println("MathRequest");
-		System.out.println("SendSeveralRequests");
-		System.out.println("--------------");
-		System.out.println();
-		
+//		System.out.println("--------------");
+//		System.out.println("Possible commands:");
+//		System.out.println("registerLoadBalancer");
+//		System.out.println("end");
+//		System.out.println("MathRequest");
+//		System.out.println("SendSeveralRequests");
+//		System.out.println("--------------");
+//		System.out.println();
+//		
 		while (notEnded) {
 			if (sc.hasNext()) {
+				
+				System.out.println("--------------");
+				System.out.println("Possible commands:");
+				System.out.println("registerLoadBalancer");
+				System.out.println("end");
+				System.out.println("MathRequest");
+				System.out.println("SendSeveralRequests");
+				System.out.println("--------------");
+				System.out.println();
+				
 				System.out.print("Command:");
 				String s = sc.nextLine();
 

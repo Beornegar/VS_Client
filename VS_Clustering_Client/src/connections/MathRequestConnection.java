@@ -8,11 +8,13 @@ public class MathRequestConnection extends Connection {
 
 	private MathParameter params;
 	private String guid;
+	private int ownPort;
 	
-	public MathRequestConnection(Socket socket, MathParameter params, String guid) {
+	public MathRequestConnection(Socket socket, MathParameter params, String guid, int port) {
 		super(socket);
 		this.params = params;
 		this.guid = guid;
+		this.ownPort = port;
 	}
 	
 	@Override
@@ -50,7 +52,7 @@ public class MathRequestConnection extends Connection {
 
 	private String createRequestString() {
 		System.out.println(params);
-		String erg = "Request;" + guid+ ";" + "calculate;" + params.getA() + ":" + params.getB() + ":" + params.getOperation().getValue();
+		String erg = "Request;"+ ownPort + ";"  + guid+ ";" + "calculate;" + params.getA() + ":" + params.getB() + ":" + params.getOperation().getValue();
 		
 		return erg;
 	}

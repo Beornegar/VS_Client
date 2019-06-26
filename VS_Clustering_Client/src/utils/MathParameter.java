@@ -37,5 +37,10 @@ public class MathParameter {
 	public void setOperation(MathOperations operation) {
 		this.operation = operation;
 	}
+
+	@Override
+	public String toString() {
+		return "MathParameter [a=" + a + ", b=" + b + ", operation=" + operation + "]";
+	}
 	
 }

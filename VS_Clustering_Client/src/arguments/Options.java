@@ -14,6 +14,7 @@ public class Options extends OptionsContainer {
     protected HashMap<String, String> optionsHashMap = new HashMap<String, String>();
    
     private final String[] allowed = new String[] {
+    		"-port"
     };
 
     public Options() {
@@ -29,6 +30,11 @@ public class Options extends OptionsContainer {
         if (defaultOptionsHashMap == null) {
             defaultOptionsHashMap = new HashMap<String, String>();
         }
+        defaultOptionsHashMap.put("-port", "10001");
     }
 
+    public int getPort() {
+		return this.makeInteger(getParameterValue("-port"));
+	}
+    
 }

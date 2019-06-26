@@ -39,7 +39,16 @@ public class ConnectionInformation {
 
 	@Override
 	public String toString() {
-		return "ConnectionInformation [adress=" + adress + ", port=" + port + "]";
+		
+		String erg = "ConnectionInformation [adress=" + adress + ", port=" + port + ",OpenRequests= ["; 
+		
+		for(UUID u : listOfOpenRequests) {
+			erg += u.toString();
+		}
+		
+		erg +=  "] ]";
+		
+		return erg;
 	}
 
 }

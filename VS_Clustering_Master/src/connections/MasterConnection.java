@@ -25,7 +25,7 @@ public class MasterConnection extends Connection {
 
 	/***
 	 * Message-Form: "RequestType;Guid;Feature;Arguments" <br>
-	 * For math request: String request = "Request;" + guid+ ";" + "calculate;" +
+	 * For math request: String request = "Request;"+port + guid+ ";" + "calculate;" +
 	 * params.getA() + ":" + params.getB() + ":" + params.getOperation(); <br>
 	 * 
 	 * 1. Get message from outside with listenSocket <br>
@@ -77,32 +77,38 @@ public class MasterConnection extends Connection {
 	public void processClientRequest(String message) {
 
 		String[] messageParts = message.split(";");
-		if (messageParts.length < 3) {
+		if (messageParts.length < 4) {
 			System.out.println("Incorrect Request String [" + message + "]!!");
-			System.out.println("Minimum is 3 : [REQUEST,GUID,FEATURE]");
+			System.out.println("Minimum is 4 : [REQUEST,PORT,GUID,FEATURE]");
 		}
 
-		String guidString = messageParts[1];
+		int clientPort = Integer.parseInt(messageParts[1]);
+		String guidString = messageParts[2];
 		UUID guid = UUID.fromString(guidString);
 		
-		String feature = messageParts[2].toLowerCase();
+		String feature = messageParts[3].toLowerCase();
 
 		String arguments = "";
-		if (messageParts.length > 3) {
-			arguments = messageParts[3];
+		if (messageParts.length > 4) {
+			arguments = messageParts[4];
 		}
 
 		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(), feature);
 		System.out.println("Slave with least amount of work: " + slaveInfo);
-		
-		//TODO: Speichern der GUID um das zurückkommende Ergebnis wieder zuzuordnen
-		
 		if (slaveInfo != null) {
+			
+			balancer.addClientRequest(socket.getInetAddress(), clientPort, guid);
+			
 			sendRequestToSlave(feature, arguments, slaveInfo, guid);
+							
 		} else {
 			Request requestToProcess = new Request(feature, arguments, this.socket.getInetAddress(),
 					this.socket.getPort());
+			
+			balancer.addClientRequest(socket.getInetAddress(), clientPort, guid);
+			
 			balancer.getRequestsToProcess().add(requestToProcess);
+			
 		}
 	}
 
@@ -145,10 +151,7 @@ public class MasterConnection extends Connection {
 			clientOutput.writeUTF("Request;" + guid + ";" + feature + ";" + arguments);
 
 			clientOutput.flush();
-			
 			socket.close();
-
-			slaveInfo.getListOfOpenRequests().add(guid);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -171,19 +174,20 @@ public class MasterConnection extends Connection {
 		UUID guid = UUID.fromString(messageParts[1]);
 		String ergMessage = messageParts[2];
 
-		System.out.println("Received answer from slave: ");
-		for(String m : messageParts) {
-			System.out.println(m);
-		}
-		
-		System.out.println("List of open requests");
-		for(ConnectionInformation c : balancer.getClientRequests()) {
-			
-			System.out.println("Client: " + c);
-			for(UUID u : c.getListOfOpenRequests()) {
-				System.out.println(u);
-			}
-		}
+//		System.out.println("Received answer from slave: ");
+//		for(String m : messageParts) {
+//			System.out.println(m);
+//		}
+//		
+//		System.out.println("List of open requests");
+//		for(ConnectionInformation c : balancer.getClientRequests()) {
+//			
+//			System.out.println("Client: " + c);
+//			for(UUID u : c.getListOfOpenRequests()) {
+//				System.out.println(u);
+//				
+//			}
+//		}
 		
 		Optional<ConnectionInformation> infoOptional = balancer.getClientRequests().stream()
 				.filter(i -> i.getListOfOpenRequests().contains(guid)).findFirst();

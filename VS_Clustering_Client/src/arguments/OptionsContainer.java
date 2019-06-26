@@ -131,6 +131,7 @@ public class OptionsContainer {
             defaultOptionsHashMap = new HashMap<String, String>();
 
             defaultOptionsHashMap.put("-verbose", "false");
+         
 
         }
     }
