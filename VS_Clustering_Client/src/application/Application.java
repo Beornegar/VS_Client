@@ -112,7 +112,43 @@ public class Application {
 					MathParameter params = new MathParameter(a, b, MathOperations.valueOf(op));
 
 					server.sendMathRequest(ip, port, params, UUID.randomUUID().toString());
+				} else if (s.toLowerCase().equals("SendSeveralRequests")) {
 
+					System.out.println("----------- Available Loadbalancer -------------");
+					for (LoadBalancerInformation info : loadbalancer) {
+						System.out.println(info.toString());
+					}
+					System.out.println("------------------------------------------------");
+					System.out.println();
+
+					System.out.print("Enter Loadbalancer-IP: ");
+					String ip = sc.nextLine();
+					System.out.println();
+					System.out.print("Enter Loadbalancer-Port: ");
+					int port = sc.nextInt();
+
+					System.out.println();
+					System.out.print("Parameter a: ");
+					double a = sc.nextDouble();
+
+					System.out.println();
+					System.out.print("Parameter b: ");
+					double b = sc.nextDouble();
+
+					System.out.println();
+					System.out.print("Operation: ");
+					String op = sc.next();
+					
+					System.out.println();
+					System.out.print("Number of requests: ");
+					int numberOfRequests = sc.nextInt();
+
+					MathParameter params = new MathParameter(a, b, MathOperations.valueOf(op));
+					
+					for(int i = 0; i < numberOfRequests; i++) {
+						server.sendMathRequest(ip, port, params, UUID.randomUUID().toString());
+					}
+					
 				}
 
 			}
