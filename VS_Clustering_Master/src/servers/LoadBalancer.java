@@ -40,11 +40,18 @@ public class LoadBalancer extends Thread {
 	private SynchronizedList<ConnectionInformation> clientRequests = new SynchronizedList<>();
 
 	private Queue<Request> requestsToProcess = new ConcurrentLinkedQueue<>();
+	
+	private boolean verbose;
 
-	public LoadBalancer(int port) {
+	public LoadBalancer(int port, boolean verbose) {
+		this.verbose = verbose;
 		try {
 			if (port < Configuration.getMinPort() || port > Configuration.getMaxPort()) {
+				System.err.println("Port "+ port+ " was not between min max of Configuration: "+Configuration.getMinPort()+" and "
+				+Configuration.getMaxPort()+ "Port will get overridden by Config to "+Configuration.getServerPort());
 				port = Configuration.getServerPort();
+
+
 			}
 			this.socket = new ServerSocket(port);
 
@@ -95,7 +102,7 @@ public class LoadBalancer extends Thread {
 			task = new MasterConnection(requestSocket, this);
 			threadPool.execute(task);
 			clientRequests.add(new ConnectionInformation(requestSocket.getInetAddress(), requestSocket.getPort()));
-			System.out.println("Got new request");
+			System.out.println("Got new request from "+requestSocket.getInetAddress()+":"+requestSocket.getPort());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -114,13 +121,13 @@ public class LoadBalancer extends Thread {
 
 	public void register(SlaveInformation slave) {
 		slaves.add(slave);
-		System.out.println("register new Slave: " + slave);
+		System.out.println("Registered new Slave: " + slave);
 	}
 
 	public void unregister(SlaveInformation slave) {
 		if (slaves.contains(slave)) {
 			slaves.remove(slaves.indexOf(slave));
-			System.out.println("Deregister slave: " + slave);
+			System.out.println("Deregisterd slave: " + slave);
 		}
 	}
 
