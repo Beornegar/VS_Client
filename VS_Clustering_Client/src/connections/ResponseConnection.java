@@ -10,7 +10,6 @@ public class ResponseConnection extends Connection {
 
 	@Override
 	public void run() {
-	
 		processResponse();
 	}
 	

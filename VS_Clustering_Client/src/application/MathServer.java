@@ -64,7 +64,7 @@ public class MathServer extends Thread {
 	public void sendMathRequest(String internetAdress, int port, MathParameter params, String guid) {
 		try {
 			Socket sendingSocket = new Socket(internetAdress, port);
-			Connection task = new MathRequestConnection(sendingSocket, params, guid, this.ownPort);
+			Connection task = new MathRequestConnection(sendingSocket, guid, this.ownPort,params.getA(),params.getB(),params.getOperation());
 			threadPool.execute(task);
 
 		} catch (IOException e) {

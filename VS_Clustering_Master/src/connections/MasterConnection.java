@@ -1,6 +1,5 @@
 package connections;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import servers.LoadBalancer;
-import utils.ConnectionInformation;
+import utils.ClientRequest;
 import utils.Request;
 import utils.SlaveInformation;
 
@@ -17,10 +16,13 @@ public class MasterConnection extends Connection {
 
 	private LoadBalancer balancer;
 
-	public MasterConnection(Socket socket, LoadBalancer balancer) {
+	private boolean verbose;
+	
+	public MasterConnection(Socket socket, LoadBalancer balancer,boolean verbose) {
 		super(socket);
 
 		this.balancer = balancer;
+		this.verbose = verbose;
 	}
 
 	/***
@@ -87,50 +89,31 @@ public class MasterConnection extends Connection {
 		int clientPort = Integer.parseInt(messageParts[1]);
 		String guidString = messageParts[2];
 		UUID guid = UUID.fromString(guidString);
-		
 		String feature = messageParts[3].toLowerCase();
-
 		String arguments = "";
 		if (messageParts.length > 4) {
 			arguments = messageParts[4];
 		}
 
-		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(), feature);
-		System.out.println("Slave with least amount of work: " + slaveInfo);
-		if (slaveInfo != null) {
-			
-			balancer.addClientRequest(socket.getInetAddress(), clientPort, guid);
-			
-			sendRequestToSlave(feature, arguments, slaveInfo, guid);
-							
-		} else {
-			Request requestToProcess = new Request(feature, arguments, this.socket.getInetAddress(),
-					this.socket.getPort(), guid);
-			
-			balancer.addClientRequest(socket.getInetAddress(), clientPort, guid);
-			
-			balancer.getRequestsToProcess().add(requestToProcess);
-			
+		balancer.getClientRequests().add(new ClientRequest(socket.getInetAddress(), clientPort, guid, feature, arguments));
+		
+		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(), feature, guid);
+		
+		if(slaveInfo != null) {
+			System.out.println("Slave with least amount of work: " + slaveInfo + ", Amount of requests: " + slaveInfo.getAmountOfCurrentRequests());
 		}
+		
+		if (slaveInfo != null) {
+			sendRequestToSlave(feature, arguments, slaveInfo, guid);				
+		} 
 	}
 
 	public void processClientRequest(Request request) {
 
-		String feature = request.getFeature();
-		String arguments = request.getArguments();
-		UUID guid = request.getGuid();
-
-		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(), feature);
-
-		if (slaveInfo != null) {
-			sendRequestToSlave(feature, arguments, slaveInfo, guid);
-		} else {
-			Request requestToProcess = new Request(feature, arguments, this.socket.getInetAddress(),
-					this.socket.getPort(), guid);
-			
-			balancer.getRequestsToProcess().add(requestToProcess);
-		}
-
+		String message = "Request;" + request.getClientPort() + ";" + request.getGuid() + ";" + request.getFeature() + ";" + request.getArguments();
+		
+		this.processClientRequest(message);
+		
 	}
 
 	/**
@@ -146,10 +129,20 @@ public class MasterConnection extends Connection {
 	private void sendRequestToSlave(String feature, String arguments, SlaveInformation slaveInfo, UUID guid) {
 		Socket socket;
 		try {
-			System.out.println(""+slaveInfo.getAdress()+ slaveInfo.getPort());
-			socket = new Socket(slaveInfo.getAdress(), slaveInfo.getPort());
+			
+			if(verbose) {
+				System.out.println(""+slaveInfo.getAddress()+ slaveInfo.getPort());
+			}
+			
+			System.out.println("Requests of Slave: " + slaveInfo.getAmountOfCurrentRequests());
+			
+			socket = new Socket(slaveInfo.getAddress(), slaveInfo.getPort());
 			DataOutputStream clientOutput = new DataOutputStream(socket.getOutputStream());
-			System.out.println("Send message to slave ["+ "Request;" + guid + ";" + feature + ";" + arguments  + "]" );
+			
+			if(verbose) {
+				System.out.println("Send message to slave ["+ "Request;" + guid + ";" + feature + ";" + arguments  + "]" );
+			}
+			
 			clientOutput.writeUTF("Request;" + guid + ";" + feature + ";" + arguments);
 
 			clientOutput.flush();
@@ -176,27 +169,26 @@ public class MasterConnection extends Connection {
 		UUID guid = UUID.fromString(messageParts[1]);
 		String ergMessage = messageParts[2];
 
-//		System.out.println("Received answer from slave: ");
-//		for(String m : messageParts) {
-//			System.out.println(m);
-//		}
-//		
-//		System.out.println("List of open requests");
-//		for(ConnectionInformation c : balancer.getClientRequests()) {
-//			
-//			System.out.println("Client: " + c);
-//			for(UUID u : c.getListOfOpenRequests()) {
-//				System.out.println(u);
-//				
-//			}
-//		}
-		
-		Optional<ConnectionInformation> infoOptional = balancer.getClientRequests().stream()
-				.filter(i -> i.getListOfOpenRequests().contains(guid)).findFirst();
+		System.out.println("Checking for clientdata and slavedata");
+		Optional<ClientRequest> infoOptional = balancer.getClientRequests().stream()
+				.filter(i -> i.getGuid().equals(guid)).findFirst();
 
-		if (infoOptional.isPresent()) {
-			ConnectionInformation info = infoOptional.get();
-			
+		Optional<SlaveInformation> slaveInfo = balancer.getSlaves().stream()
+				.filter(i -> i.getGuids().contains(guid)).findFirst();
+		
+		System.out.println("Client-Data: SIZE:" + balancer.getClientRequests().size());
+		
+		if(infoOptional.isPresent()) {
+			System.out.println("Client-Data is present");
+		}
+		if(slaveInfo.isPresent()) {
+			System.out.println("Slave-Data is present. Requests: "+ slaveInfo.get().getAmountOfCurrentRequests());
+		}
+		
+		if (infoOptional.isPresent() && slaveInfo.isPresent()) {
+			ClientRequest info = infoOptional.get();
+			SlaveInformation slave = slaveInfo.get();
+						
 			System.out.println("Received Result["+ "Result;" + guid + " ; Returned message [" + ergMessage + "]" +"] and sending it back to client: " + info);
 			InetAddress clientAddress = info.getAdress();
 			int clientPort = info.getPort();
@@ -207,7 +199,15 @@ public class MasterConnection extends Connection {
 				clientOutput.writeUTF("Result;" + guid + " ; Returned message [" + ergMessage + "]");
 				clientOutput.flush();
 				socket.close();
-				info.getListOfOpenRequests().remove(guid);
+				
+				System.out.println("Removing client request: OLD:" + balancer.getClientRequests().size());
+				balancer.getClientRequests().remove(info);
+				System.out.println("Removing client request: NEW:" + balancer.getClientRequests().size());
+				
+				System.out.println("Removing slave request: OLD:" + slave.getGuids().size());
+				slave.getGuids().remove(guid);
+				System.out.println("Removing slave request: NEW:" + slave.getGuids().size());
+							
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -222,7 +222,6 @@ public class MasterConnection extends Connection {
 	 */
 	private void registerSlave(String[] messageParts) {
 		
-
 		int maxAmount = Integer.parseInt(messageParts[1]);
 
 		String f = messageParts[2];
@@ -231,7 +230,7 @@ public class MasterConnection extends Connection {
 		
 		balancer.register(
 				new SlaveInformation(this.socket.getInetAddress(), port, maxAmount, features));
-		System.out.println();
+		
 		send("ok");
 	}
 

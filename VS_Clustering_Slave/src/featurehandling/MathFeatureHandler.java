@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MathFeatureHandler implements FeatureHandling {
@@ -40,11 +39,6 @@ public class MathFeatureHandler implements FeatureHandling {
 		
 		String[] messageParts = message.split(";");
 
-		System.out.println("In processing of Request");
-		System.out.println("MEssageparts.length = " + messageParts.length);
-		for(String m : messageParts) {
-			System.out.println(m);
-		}
 		if(messageParts.length != 4) {
 			System.out.println("Wrong format of requests ["+ message + "]!");
 		}
@@ -54,20 +48,13 @@ public class MathFeatureHandler implements FeatureHandling {
 		String argumentString = messageParts[3];
 		String[] argumentsAsString = argumentString.split(":");
 		
-		System.out.println("Processing arguments string:");
-		for(String m : argumentsAsString) {
-			System.out.println(m);
-		}
-		
 		try {
 
 			double a = Double.parseDouble(argumentsAsString[0]);
 			double b = Double.parseDouble(argumentsAsString[1]);
 			String function = argumentsAsString[2];
 		
-
 			String erg = calculate(a, b, function) + "";
-			System.out.println("Finished processing : " + erg);
 			
 			return "Result;"+ guid + ";" + erg;
 		} catch (NumberFormatException ex) {

@@ -7,20 +7,18 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import arguments.Configuration;
 import connections.Connection;
 import connections.MasterConnection;
 import connections.QueueConnection;
+import utils.ClientRequest;
 import utils.Request;
-import utils.ConnectionInformation;
 import utils.SlaveInformation;
 import utils.SynchronizedList;
 
@@ -42,7 +40,9 @@ public class LoadBalancer extends Thread {
 	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	private SynchronizedList<SlaveInformation> slaves = new SynchronizedList<>();
-	private SynchronizedList<ConnectionInformation> clientRequests = new SynchronizedList<>();
+	private Queue<ClientRequest> clientRequests = new ConcurrentLinkedQueue<ClientRequest>();
+	// private SynchronizedList<ClientRequest> clientRequests = new
+	// SynchronizedList<>();
 
 	private Queue<Request> requestsToProcess = new ConcurrentLinkedQueue<>();
 
@@ -72,21 +72,22 @@ public class LoadBalancer extends Thread {
 				@Override
 				public void run() {
 
-					if (requestsToProcess.size() > 0) {
-						System.out.println("Scheduler processing requests now");
-						for (int i = 0; i < 10; i++) {
-							Request r = requestsToProcess.poll();
-
-							if (r == null) {
-								break;
-							}
-
-							processQueueItem(r);
+					if (clientRequests.size() > 0) {
+						System.out.println("------ Queue starts now ------");
+						
+						int index = clientRequests.size() < 10 ? clientRequests.size() : 10;
+						
+						List<ClientRequest> requests = new ArrayList<>();
+						for (int i = 0; i < index; i++) {
+							requests.add(clientRequests.poll());
 						}
 
+						processQueueItem(requests);
+
 					}
+					System.out.println("---------Queue ends now------------");
 				}
-			}, 5 /* Startverzögerung */, 20 /* Dauer */, TimeUnit.SECONDS);
+			}, 5 /* Startverzögerung */, 10 /* Dauer */, TimeUnit.SECONDS);
 
 			while (!isInterrupted()) {
 				reactToRequest();
@@ -103,19 +104,20 @@ public class LoadBalancer extends Thread {
 		Connection task;
 		try {
 			Socket requestSocket = socket.accept();
-			task = new MasterConnection(requestSocket, this);
+			task = new MasterConnection(requestSocket, this, verbose);
 			threadPool.execute(task);
-			// clientRequests.add(new ConnectionInformation(requestSocket.getInetAddress(),
-			// requestSocket.getPort()));
-			System.out
-					.println("Got new request from " + requestSocket.getInetAddress() + ":" + requestSocket.getPort());
+
+			if (verbose) {
+				System.out.println(
+						"Got new request from " + requestSocket.getInetAddress() + ":" + requestSocket.getPort());
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void processQueueItem(Request request) {
-		Connection task = new QueueConnection(null, this, request);
+	private void processQueueItem(List<ClientRequest> requests) {
+		Connection task = new QueueConnection(null, this, requests, verbose);
 		threadPool.execute(task);
 	}
 
@@ -127,7 +129,7 @@ public class LoadBalancer extends Thread {
 	public void unregister(InetAddress address, int port) {
 
 		List<SlaveInformation> list = new ArrayList<>();
-		slaves.stream().filter(s -> s.getAdress().toString().equals(address.toString()) && s.getPort() == port)
+		slaves.stream().filter(s -> s.getAddress().toString().equals(address.toString()) && s.getPort() == port)
 				.forEach(s -> {
 					list.add(s);
 				});
@@ -138,61 +140,11 @@ public class LoadBalancer extends Thread {
 		}
 	}
 
-	/**
-	 * 1. See if ClientInformation already exists (address + port) <br>
-	 * 1a if true: add guid <br>
-	 * 1b Else: new ClientInformation + guid <br>
-	 * 
-	 * @param address
-	 * @param port
-	 * @param guid
-	 */
-	public synchronized void addClientRequest(InetAddress address, int port, UUID guid) {
-
-		System.out.println("Add new GUID to right ConnectionInformation");
-
-		System.out.println("------ Existing ConnectionInformations ----------");
-
-		for (ConnectionInformation ci : this.getClientRequests()) {
-			System.out.println(ci);
-		}
-
-		System.out.println("----------------");
-
-		System.out.println("Looking for same address + port");
-		List<ConnectionInformation> list = this.clientRequests.stream()
-				.filter(ci -> ci.getAdress() == address && ci.getPort() == port).collect(Collectors.toList());
-		System.out.println(list.size() + " elements found.");
-
-		if (list.size() == 1) {
-			System.out.println("Adding guid[" + guid + "]" + " to CI [" + list.get(0).getAdress() + ":"
-					+ list.get(0).getPort() + "]");
-			list.get(0).getListOfOpenRequests().add(guid);
-		} else if (list.size() > 1) {
-			System.err.println(
-					"Several connection informations of 1 client found ! Should not be possible! Just taking first one");
-			list.get(0).getListOfOpenRequests().add(guid);
-		} else {
-			System.out.println("No ConnectionInformation found. Creating new one");
-			ConnectionInformation ci = new ConnectionInformation(address, port);
-			ci.getListOfOpenRequests().add(guid);
-			this.getClientRequests().add(ci);
-		}
-
-		System.out.println("------ After change ConnectionInformations ----------");
-
-		for (ConnectionInformation ci : this.getClientRequests()) {
-			System.out.println(ci);
-		}
-
-		System.out.println("----------------");
-	}
-
-	public SynchronizedList<ConnectionInformation> getClientRequests() {
+	public Queue<ClientRequest> getClientRequests() {
 		return clientRequests;
 	}
 
-	public void setClientRequests(SynchronizedList<ConnectionInformation> clientRequests) {
+	public void setClientRequests(Queue<ClientRequest> clientRequests) {
 		this.clientRequests = clientRequests;
 	}
 

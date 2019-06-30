@@ -69,9 +69,10 @@ public class SlaveServer extends Thread {
 			}
 			this.socket = new ServerSocket(port);
 
-			System.out.println("SlaveServer tries to connect to :" + masterAddress + ":" + masterPort
-					+ " with MaxAmountOfRequests " + maxAmountOfRequests);
-
+			if (verbose) {
+				System.out.println("SlaveServer tries to connect to :" + masterAddress + ":" + masterPort
+						+ " with MaxAmountOfRequests " + maxAmountOfRequests);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -93,7 +94,7 @@ public class SlaveServer extends Thread {
 
 					registerWithMasterServer(masterAddress, masterPort, LifeCycleMethods.REGISTER);
 					if (verbose) {
-						System.out.println("IsRegistered" + isRegistered() + "MAsteraddress:" + masterAddress);
+						System.out.println("IsRegistered" + isRegistered() + "Masteraddress:" + masterAddress);
 					}
 				} else {
 
@@ -126,7 +127,7 @@ public class SlaveServer extends Thread {
 	private void reactToRequest() {
 		Connection task;
 		try {
-			task = new SlaveConnection(socket.accept(), new MathFeatureHandler(), this, masterAddress, masterPort);
+			task = new SlaveConnection(socket.accept(), new MathFeatureHandler(), this, masterAddress, masterPort, verbose);
 			threadPool.execute(task);
 			incrementOpenRequests();
 
@@ -134,7 +135,6 @@ public class SlaveServer extends Thread {
 			e.printStackTrace();
 		}
 	}
-
 
 	/***
 	 * 
@@ -169,12 +169,22 @@ public class SlaveServer extends Thread {
 
 	public synchronized void incrementOpenRequests() {
 		openRequests++;
-		System.out.println("OpenRequests: " + openRequests);
+		if(verbose) {
+			System.out.println("OpenRequests: " + openRequests);
+		}
+		
+		if(openRequests > maxAmountOfRequests) {
+			System.out.println("Mehr Anforderungen als erlaubt!!");
+		}
+		
 	}
 
 	public synchronized void decrementOpenRequests() {
 		openRequests--;
-		System.out.println("OpenRequests: " + openRequests);
+		if(verbose) {
+			System.out.println("OpenRequests: " + openRequests);
+		}
+		
 	}
 
 	public void registerMaster(InetAddress address, int port) {
@@ -187,8 +197,7 @@ public class SlaveServer extends Thread {
 		this.masterAddress = null;
 		this.masterPort = 0;
 		this.isRegistered = false;
-		
-		
+
 	}
 
 	public boolean isRegistered() {

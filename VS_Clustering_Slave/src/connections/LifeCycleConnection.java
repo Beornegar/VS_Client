@@ -24,22 +24,15 @@ public class LifeCycleConnection extends Connection {
 	
 	@Override
 	public void run() {
-		
-		System.out.println("In LifeCylcle-Thread");
-		
-		
+
 		if(method.equals(LifeCycleMethods.REGISTER)) {	
-			
-			System.out.println("In Register");
 			
 			send("Register" + ";" + maxAmountOfRequests + ";" + featureString + ";" + server.getOwnPort());
 			String returnMassage = receive();
 			
 			if(returnMassage.toLowerCase().equals("ok")) {
-				System.out.println("registered = true");
 				server.setRegistered(true);
 			} else {
-				System.out.println("registered = false");
 				server.setRegistered(false);
 			}
 			

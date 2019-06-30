@@ -28,7 +28,7 @@ public class Application {
 
 		balancer = new LoadBalancer(options.getPort(),options.getVerbose());
 		balancer.start();
-		System.out.println("Loadbalaner/Master running now on port: " + options.getPort());
+		System.out.println("Loadbalancer/Master running now on port: " + options.getPort());
 		runApplication();
 
 	}
