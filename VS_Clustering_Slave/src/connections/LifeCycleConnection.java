@@ -43,7 +43,7 @@ public class LifeCycleConnection extends Connection {
 			if(returnMassage.toLowerCase().equals("ok")) {
 				server.deregisterMaster();
 			} else {
-				System.out.println("Could not deregister from master. Message of Master ["+ returnMassage +"]");
+				System.err.println("Could not deregister from master. Message of Master ["+ returnMassage +"]");
 			}
 			
 		} 

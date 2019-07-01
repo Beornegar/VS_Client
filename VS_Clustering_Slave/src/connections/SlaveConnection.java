@@ -16,8 +16,6 @@ public class SlaveConnection extends Connection {
 	private InetAddress address;
 	private int port;
 
-	private long numberOfMessages;
-	
 	private boolean verbose = false;
 
 	public SlaveConnection(Socket socket, FeatureHandling processor, SlaveServer server, InetAddress address, int port,
@@ -39,14 +37,15 @@ public class SlaveConnection extends Connection {
 
 		String message = receive();
 
-		numberOfMessages += 1;
+		if(verbose) {
+			System.out.println("Received message: " + message);
+		}
 		
-		System.out.println("["+ numberOfMessages + "] Received message: " + message);
-
 		String erg = processor.processRequest(message);
-		//if (verbose) {
-			System.out.println("Sending following message to Master: " + erg);
-		//}
+		
+		if (verbose) {
+			System.out.println("Sending to Master: " + erg);
+		}
 		sendMessageToMaster(erg);
 
 		server.decrementOpenRequests();

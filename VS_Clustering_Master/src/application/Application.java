@@ -26,7 +26,7 @@ public class Application {
 			options = ArgumentParsing.parseStringsFromArgs(args);
 		}
 
-		balancer = new LoadBalancer(options.getPort(),options.getVerbose());
+		balancer = new LoadBalancer(options.getPort(),options.getVerbose(), options.getQueueFrequency(), options.getQueueAmount());
 		balancer.start();
 		System.out.println("Loadbalancer/Master running now on port: " + options.getPort());
 		runApplication();
@@ -64,10 +64,10 @@ public class Application {
 		System.out.println("--------------------------------------");
 
 		System.out.println("Possible commands:");
-		System.out.println("End : Ends the server");
+		System.out.println("End: Ends the server");
 
-		System.out.println("GetAllSlaves : get all registered slaves");
-		System.out.println("GetOpenRequests : get all pending requests");
+		System.out.println("GetAllSlaves: get all registered slaves");
+		System.out.println("GetOpenRequests: get all pending requests");
 
 		System.out.println("--------------------------------------");
 		System.out.println();
@@ -75,6 +75,8 @@ public class Application {
 		
 		while (notEnded) {
 			if (sc.hasNext()) {
+				
+				System.out.println("Command:");
 				
 				String s = sc.nextLine();
 

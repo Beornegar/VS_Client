@@ -15,7 +15,9 @@ public class Options extends OptionsContainer {
 	protected HashMap<String, String> optionsHashMap = new HashMap<String, String>();
 
 	private final String[] allowed = new String[] { "-verbose", // Put out all comments?
-			"-port" // with port
+			"-port", // with port
+			"-queueamount", // number of elements per queue run
+			"-queuefrequency" // frequency of queue run
 	};
 
 	public Options() {
@@ -32,10 +34,19 @@ public class Options extends OptionsContainer {
 			defaultOptionsHashMap = new HashMap<String, String>();
 		}
 		defaultOptionsHashMap.put("-port", "10000");
-
+		defaultOptionsHashMap.put("-queuefrequency", "10");
+		defaultOptionsHashMap.put("-queueamount", "10");
 	}
 
 	public int getPort() {
 		return this.makeInteger(getParameterValue("-port"));
+	}
+	
+	public int getQueueFrequency() {
+		return this.makeInteger(getParameterValue("-queuefrequency"));
+	}
+	
+	public int getQueueAmount() {
+		return this.makeInteger(getParameterValue("-queueamount"));
 	}
 }

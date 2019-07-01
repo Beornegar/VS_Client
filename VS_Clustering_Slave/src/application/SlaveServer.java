@@ -93,9 +93,7 @@ public class SlaveServer extends Thread {
 				if (!isRegistered() && registerInProcess == false && masterAddress != null && masterPort > 0) {
 
 					registerWithMasterServer(masterAddress, masterPort, LifeCycleMethods.REGISTER);
-					if (verbose) {
-						System.out.println("IsRegistered" + isRegistered() + "Masteraddress:" + masterAddress);
-					}
+					
 				} else {
 
 					while (!endServer && isRegistered()) {
@@ -148,7 +146,6 @@ public class SlaveServer extends Thread {
 	 */
 	public void registerWithMasterServer(InetAddress address, int port, LifeCycleMethods lifecycleMethod) {
 		try {
-			System.out.println("In register with master server");
 			registerInProcess = true;
 			Socket sendingSocket = new Socket(address, port);
 			Connection task = new LifeCycleConnection(sendingSocket, lifecycleMethod, this.maxAmountOfRequests,
@@ -169,22 +166,15 @@ public class SlaveServer extends Thread {
 
 	public synchronized void incrementOpenRequests() {
 		openRequests++;
-		if(verbose) {
-			System.out.println("OpenRequests: " + openRequests);
-		}
-		
+				
 		if(openRequests > maxAmountOfRequests) {
-			System.out.println("Mehr Anforderungen als erlaubt!!");
+			System.err.println("Mehr Anforderungen als erlaubt!!");
 		}
 		
 	}
 
 	public synchronized void decrementOpenRequests() {
 		openRequests--;
-		if(verbose) {
-			System.out.println("OpenRequests: " + openRequests);
-		}
-		
 	}
 
 	public void registerMaster(InetAddress address, int port) {

@@ -9,7 +9,6 @@ import java.util.UUID;
 
 import servers.LoadBalancer;
 import utils.ClientRequest;
-import utils.Request;
 import utils.SlaveInformation;
 
 public class MasterConnection extends Connection {
@@ -42,7 +41,11 @@ public class MasterConnection extends Connection {
 	public void run() {
 
 		String message = receive();
-		System.out.println("Received Message: " + message);
+		
+		if(verbose) {
+			System.out.println("Received message [" + message + "]");
+		}
+
 		String[] messageParts = message.split(";");
 
 		if (messageParts.length > 1) {
@@ -98,22 +101,10 @@ public class MasterConnection extends Connection {
 		balancer.getClientRequests().add(new ClientRequest(socket.getInetAddress(), clientPort, guid, feature, arguments));
 		
 		SlaveInformation slaveInfo = SlaveInformation.getFreeSlaveWithLeastAmountOfWork(balancer.getSlaves(), feature, guid);
-		
-		if(slaveInfo != null) {
-			System.out.println("Slave with least amount of work: " + slaveInfo + ", Amount of requests: " + slaveInfo.getAmountOfCurrentRequests());
-		}
-		
+			
 		if (slaveInfo != null) {
 			sendRequestToSlave(feature, arguments, slaveInfo, guid);				
 		} 
-	}
-
-	public void processClientRequest(Request request) {
-
-		String message = "Request;" + request.getClientPort() + ";" + request.getGuid() + ";" + request.getFeature() + ";" + request.getArguments();
-		
-		this.processClientRequest(message);
-		
 	}
 
 	/**
@@ -129,21 +120,16 @@ public class MasterConnection extends Connection {
 	private void sendRequestToSlave(String feature, String arguments, SlaveInformation slaveInfo, UUID guid) {
 		Socket socket;
 		try {
-			
-			if(verbose) {
-				System.out.println(""+slaveInfo.getAddress()+ slaveInfo.getPort());
-			}
-			
-			System.out.println("Requests of Slave: " + slaveInfo.getAmountOfCurrentRequests());
-			
+
 			socket = new Socket(slaveInfo.getAddress(), slaveInfo.getPort());
 			DataOutputStream clientOutput = new DataOutputStream(socket.getOutputStream());
 			
+			String request = "Request;" + guid + ";" + feature + ";" + arguments;
 			if(verbose) {
-				System.out.println("Send message to slave ["+ "Request;" + guid + ";" + feature + ";" + arguments  + "]" );
+				System.out.println("Send message to slave [" + request + "]" );
 			}
 			
-			clientOutput.writeUTF("Request;" + guid + ";" + feature + ";" + arguments);
+			clientOutput.writeUTF(request);
 
 			clientOutput.flush();
 			socket.close();
@@ -169,50 +155,42 @@ public class MasterConnection extends Connection {
 		UUID guid = UUID.fromString(messageParts[1]);
 		String ergMessage = messageParts[2];
 
-		System.out.println("Checking for clientdata and slavedata");
+		
 		Optional<ClientRequest> infoOptional = balancer.getClientRequests().stream()
 				.filter(i -> i.getGuid().equals(guid)).findFirst();
 
 		Optional<SlaveInformation> slaveInfo = balancer.getSlaves().stream()
 				.filter(i -> i.getGuids().contains(guid)).findFirst();
-		
-		System.out.println("Client-Data: SIZE:" + balancer.getClientRequests().size());
-		
-		if(infoOptional.isPresent()) {
-			System.out.println("Client-Data is present");
-		}
-		if(slaveInfo.isPresent()) {
-			System.out.println("Slave-Data is present. Requests: "+ slaveInfo.get().getAmountOfCurrentRequests());
-		}
-		
+				
 		if (infoOptional.isPresent() && slaveInfo.isPresent()) {
 			ClientRequest info = infoOptional.get();
 			SlaveInformation slave = slaveInfo.get();
-						
-			System.out.println("Received Result["+ "Result;" + guid + " ; Returned message [" + ergMessage + "]" +"] and sending it back to client: " + info);
+			
+			String result = "Result;" + guid + " ; Returned message [" + ergMessage + "]";
+			if(verbose) {
+				System.out.println("Received Result["+ result +"] and sending it back to client: " + info);
+			}
+			
 			InetAddress clientAddress = info.getAdress();
 			int clientPort = info.getPort();
 
 			try {
 				Socket socket = new Socket(clientAddress, clientPort);
 				DataOutputStream clientOutput = new DataOutputStream(socket.getOutputStream());
-				clientOutput.writeUTF("Result;" + guid + " ; Returned message [" + ergMessage + "]");
+				clientOutput.writeUTF(result);
 				clientOutput.flush();
 				socket.close();
 				
-				System.out.println("Removing client request: OLD:" + balancer.getClientRequests().size());
-				balancer.getClientRequests().remove(info);
-				System.out.println("Removing client request: NEW:" + balancer.getClientRequests().size());
 				
-				System.out.println("Removing slave request: OLD:" + slave.getGuids().size());
+				balancer.getClientRequests().remove(info);
+												
 				slave.getGuids().remove(guid);
-				System.out.println("Removing slave request: NEW:" + slave.getGuids().size());
-							
+										
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		} else {
-			System.out.println("GUID is not in existing!");
+			System.err.println("GUID is not in existing!");
 		}
 	}
 

@@ -83,24 +83,4 @@ public class ClientRequest {
 		this.inProgress = inProgress;
 	}
 
-	
-	
-	//public List<UUID> getListOfOpenRequests() {
-	//	return listOfOpenRequests;
-	//}
-
-//	@Override
-//	public String toString() {
-//		
-//		String erg = "ConnectionInformation [adress=" + adress + ", port=" + port + ",OpenRequests= ["; 
-//		
-//		for(UUID u : listOfOpenRequests) {
-//			erg += u.toString();
-//		}
-//		
-//		erg +=  "] ]";
-//		
-//		return erg;
-//	}
-
 }

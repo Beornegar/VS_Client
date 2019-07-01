@@ -18,7 +18,6 @@ import connections.Connection;
 import connections.MasterConnection;
 import connections.QueueConnection;
 import utils.ClientRequest;
-import utils.Request;
 import utils.SlaveInformation;
 import utils.SynchronizedList;
 
@@ -41,15 +40,16 @@ public class LoadBalancer extends Thread {
 
 	private SynchronizedList<SlaveInformation> slaves = new SynchronizedList<>();
 	private Queue<ClientRequest> clientRequests = new ConcurrentLinkedQueue<ClientRequest>();
-	// private SynchronizedList<ClientRequest> clientRequests = new
-	// SynchronizedList<>();
-
-	private Queue<Request> requestsToProcess = new ConcurrentLinkedQueue<>();
 
 	private boolean verbose;
+	private int queueFrequency;
+	private int queueAmount;
 
-	public LoadBalancer(int port, boolean verbose) {
+	public LoadBalancer(int port, boolean verbose, int queueFrequency, int queueAmount) {
 		this.verbose = verbose;
+		this.queueFrequency = queueFrequency;
+		this.queueAmount = queueAmount;
+		
 		try {
 			if (port < Configuration.getMinPort() || port > Configuration.getMaxPort()) {
 				System.err.println("Port " + port + " was not between min max of Configuration: "
@@ -71,12 +71,11 @@ public class LoadBalancer extends Thread {
 			scheduler.scheduleAtFixedRate(new Runnable() {
 				@Override
 				public void run() {
-
+					
 					if (clientRequests.size() > 0) {
-						System.out.println("------ Queue starts now ------");
-						
-						int index = clientRequests.size() < 10 ? clientRequests.size() : 10;
-						
+
+						int index = clientRequests.size() < queueAmount ? clientRequests.size() : queueAmount;
+
 						List<ClientRequest> requests = new ArrayList<>();
 						for (int i = 0; i < index; i++) {
 							requests.add(clientRequests.poll());
@@ -85,9 +84,8 @@ public class LoadBalancer extends Thread {
 						processQueueItem(requests);
 
 					}
-					System.out.println("---------Queue ends now------------");
 				}
-			}, 5 /* Startverzögerung */, 10 /* Dauer */, TimeUnit.SECONDS);
+			}, 5 /* Startverzögerung */, queueFrequency /* Dauer */, TimeUnit.SECONDS);
 
 			while (!isInterrupted()) {
 				reactToRequest();
@@ -97,7 +95,7 @@ public class LoadBalancer extends Thread {
 		} finally {
 
 		}
-		System.out.println("Server down.");
+		System.out.println("Server down...");
 	}
 
 	public void reactToRequest() {
@@ -123,7 +121,10 @@ public class LoadBalancer extends Thread {
 
 	public void register(SlaveInformation slave) {
 		slaves.add(slave);
-		System.out.println("Registered new Slave: " + slave);
+		if (verbose) {
+			System.out.println("Registered new Slave: " + slave);
+		}
+
 	}
 
 	public void unregister(InetAddress address, int port) {
@@ -135,7 +136,10 @@ public class LoadBalancer extends Thread {
 				});
 
 		for (SlaveInformation s : list) {
-			System.out.println("Removed slave [" + s + "]");
+
+			if (verbose) {
+				System.out.println("Removed slave [" + s + "]");
+			}
 			slaves.remove(s);
 		}
 	}
@@ -146,14 +150,6 @@ public class LoadBalancer extends Thread {
 
 	public void setClientRequests(Queue<ClientRequest> clientRequests) {
 		this.clientRequests = clientRequests;
-	}
-
-	public Queue<Request> getRequestsToProcess() {
-		return requestsToProcess;
-	}
-
-	public void setRequestsToProcess(Queue<Request> requestsToProcess) {
-		this.requestsToProcess = requestsToProcess;
 	}
 
 	public SynchronizedList<SlaveInformation> getSlaves() {
